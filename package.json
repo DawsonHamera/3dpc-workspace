@@ -1,0 +1,17 @@
+{
+  "name": "3dpc-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "pnpm --parallel --filter 3dpc-workspace-web --filter 3dpc-workspace-api dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write ."
+  }
+}
