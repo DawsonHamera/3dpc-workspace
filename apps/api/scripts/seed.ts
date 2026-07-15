@@ -28,8 +28,18 @@ await db.insert(roles).values([
     description: "Club administrators",
   },
   {
+    id: 3,
+    name: "Moderator",
+    description: "Club moderators",
+  },
+  {
     id: 4,
     name: "Member",
     description: "Standard club member",
+  },
+  {
+    id: 5,
+    name: "Guest",
+    description: "Limited access for guests",
   },
 ]);

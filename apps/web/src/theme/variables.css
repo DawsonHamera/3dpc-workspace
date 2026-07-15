@@ -1,0 +1,24 @@
+:root {
+    --ion-color-primary: #3A80F2;
+    /* --ion-color-primary: #fccc0a; */
+    /* --ion-color-primary-rgb: 252, 204, 10; */
+    --ion-color-primary-rgb: 58, 128, 242;
+    --ion-color-primary-contrast: #ffffff;
+    --ion-color-primary-contrast-rgb: 255, 255, 255;
+    /* --ion-color-primary-shade: #e6b800;
+  --ion-color-primary-tint: #ffe066; */
+    --ion-color-primary-shade: #326fd1;
+    --ion-color-primary-tint: #5a9af5;
+    --ion-item-background: transparent;
+    --ion-background-color: #f5f7fa;
+    --ion-text-color: #1a1a1a;
+    --ion-card-background: #ffffff;
+    /* --gradient-primary: linear-gradient(135deg, #fccc0a 0%, #B8860B 50%, #000000 100%); */
+    /* --gradient-primary-reverse: linear-gradient(90deg, #000000 0%, #B8860B 50%, #fccc0a 100%); */
+    --gradient-primary: linear-gradient(135deg, var(--ion-color-primary) 0%, #000000 100%);
+    --gradient-primary-reverse: linear-gradient(90deg, #000000 0%, var(--ion-color-primary) 100%);
+    --str-chat__primary-color: var(--ion-color-primary) !important;
+
+    /* --gradient-accent: linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #334155 100%); */
+    /* --ion-toolbar-color: var(--ion-color-light) */
+}

@@ -1,5 +1,6 @@
 import {
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -18,13 +19,17 @@ export const users = pgTable("users", {
     .notNull()
     .unique(),
 
-  name: text("name"),
+  name: text("name")
+    .notNull(),
 
   roleId: integer("role_id")
     .notNull()
-    .references(() => roles.id),
+    .references(() => roles.id)
+    .default(5),
 
   passwordHash: text("password_hash"),
+
+  meta: jsonb("meta").default({}),
 
   createdAt: timestamp("created_at")
     .notNull()
@@ -34,3 +39,5 @@ export const users = pgTable("users", {
     .notNull()
     .defaultNow(),
 });
+
+export type User = typeof users.$inferSelect;

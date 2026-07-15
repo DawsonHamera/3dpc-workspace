@@ -1,5 +1,5 @@
 {
-  "name": "3dpc-workspace-web",
+  "name": "@3dpc/web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,14 +11,27 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@3dpc/api": "workspace:*",
+    "@gsap/react": "^2.1.2",
+    "@ionic/cli": "^7.2.1",
+    "@ionic/react": "^8.8.13",
+    "@ionic/react-router": "^8.8.13",
+    "@tanstack/react-query": "^5.101.2",
+    "gsap": "^3.15.0",
+    "hono": "^4.12.30",
+    "ionicons": "^8.0.13",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-onesignal": "^3.5.6",
+    "react-router": "^5.3.4",
+    "react-router-dom": "^5.3.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@types/react-router": "^5.1.20",
     "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^10.6.0",
     "eslint-plugin-react-hooks": "^7.1.1",

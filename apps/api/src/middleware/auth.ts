@@ -1,7 +1,5 @@
 import { createMiddleware } from "hono/factory";
-
-import { getSession } from "../services/sessions";
-
+import { getSession } from "../features/auth/service";
 
 export const requireAuth = createMiddleware(async (c, next) => {
   const cookieHeader = c.req.header("Cookie");

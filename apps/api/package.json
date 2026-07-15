@@ -1,6 +1,14 @@
 {
-  "name": "3dpc-workspace-api",
+  "name": "@3dpc/api",
   "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
@@ -14,9 +22,11 @@
     "db:seed": "tsx --env-file=.env scripts/seed.ts"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.8.0",
     "@neondatabase/serverless": "^1.1.0",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.12.30"
+    "hono": "^4.12.30",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
