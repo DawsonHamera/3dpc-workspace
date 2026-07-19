@@ -17,6 +17,13 @@
 	"upload_source_maps": true,
 	"compatibility_flags": [
 		"nodejs_compat"
+	],
+	"r2_buckets": [
+		{
+			"binding": "FILES",
+			"bucket_name": "3dpc-files",
+			"preview_bucket_name": "3dpc-files-dev"
+		}
 	]
 	/**
 	 * Smart Placement

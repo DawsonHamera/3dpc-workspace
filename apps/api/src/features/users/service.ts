@@ -23,6 +23,21 @@ export const deleteUser = async (db: Db, userId: string) => {
     await db.delete(users).where(eq(users.id, userId));
 }
 
+export async function updateUserAvatar(
+    db: Db,
+    userId: string,
+    fileId: string
+) {
+    await db
+        .update(users)
+        .set({
+            avatarFileId: fileId,
+        })
+        .where(
+            eq(users.id, userId)
+        );
+}
+
 export type UserWithRole = Awaited<
   ReturnType<typeof getUserByIdWithRoles>
 >;

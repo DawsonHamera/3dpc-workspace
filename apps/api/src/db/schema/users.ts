@@ -1,4 +1,5 @@
 import {
+  AnyPgColumn,
   integer,
   jsonb,
   pgTable,
@@ -8,6 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { roles } from "./roles";
+import { files } from "./files";
 
 
 export const users = pgTable("users", {
@@ -26,6 +28,9 @@ export const users = pgTable("users", {
     .notNull()
     .references(() => roles.id)
     .default(5),
+
+  avatarFileId: uuid("avatar_file_id")
+    .references((): AnyPgColumn => files.id),
 
   passwordHash: text("password_hash"),
 

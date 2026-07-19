@@ -1,59 +1,41 @@
-import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
-
-import { IonReactRouter } from "@ionic/react-router";
-
-/* Core CSS required for Ionic components to work properly */
-import "@ionic/react/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
-import "@ionic/react/css/normalize.css";
-import "@ionic/react/css/structure.css";
-import "@ionic/react/css/typography.css";
-
-/* Optional CSS utils that can be commented out */
-import "@ionic/react/css/display.css";
-import "@ionic/react/css/flex-utils.css";
-import "@ionic/react/css/float-elements.css";
-import "@ionic/react/css/padding.css";
-import "@ionic/react/css/text-alignment.css";
-import "@ionic/react/css/text-transformation.css";
-
-/* Theme variables */
-import HomePage from "./landing/pages/home/HomePage";
-import LoginPage from "./landing/pages/login/LoginPage";
-import "./theme/variables.css";
 import { isPWAInstalled } from "./hooks/useUtils";
 import { useAuth } from "./features/auth/hooks/useAuth";
 import { OneSignalProvider } from "./services/OneSignalProvider";
-import {
-  Redirect,
-  Route,
-} from "react-router";
+import { Navigate, Outlet, Route, Routes, useNavigate } from "react-router-dom";
+import { RequireAuth } from "./components/auth/RequireAuth";
+import Dashboard from "./pages/dashboard/Dashboard";
+import LoginPage from "./pages/login/LoginPage";
+import RegisterPage from "./pages/login/RegisterPage";
+import AccountPanel from "./pages/dashboard/AccountPanel";
 
-setupIonicReact();
 
-const HomeRoute: React.FC = () => {
-    const currentUser = useAuth().data;
-    const isInstalled = isPWAInstalled();
-    return currentUser && isInstalled ? (
-        <Redirect to="/dashboard" />
-    ) : (
-        <HomePage />
-    );
-};
+export function RedirectIfAuth() {
+    const user = useAuth().data;
+
+    if (user) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return <Outlet />;
+}
 
 const App: React.FC = () => {
+
     return (
-        <IonApp>
-            <OneSignalProvider>
-                    <IonReactRouter>
-                        <IonRouterOutlet>
-                                <Route path="/" component={HomeRoute} />
-                                <Route path="/login" component={LoginPage} />
-                        </IonRouterOutlet>
-                    </IonReactRouter>
-            </OneSignalProvider>
-        </IonApp>
+        <OneSignalProvider>
+            <Routes>
+                <Route element={<RequireAuth />}>
+                    <Route path="/dashboard" element={<Dashboard />}>
+                        <Route path="account" element={<AccountPanel />} />
+                    </Route>
+                </Route>
+                <Route path="/" element={<Dashboard />} />
+                <Route element={<RedirectIfAuth />}>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                </Route>
+            </Routes>
+        </OneSignalProvider>
     );
 };
 

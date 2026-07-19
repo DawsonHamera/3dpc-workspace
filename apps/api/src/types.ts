@@ -12,12 +12,16 @@ export type UserContext = {
   role: string;
 };
 
+export type Bindings = {
+  FILES: R2Bucket;
+};
+
 export type Variables = {
   db: Db;
-  user: UserWithRole | null;
+  user: UserContext | null;
 };
 
 export type Env = {
-  Bindings: Record<string, unknown>;
+  Bindings: Bindings;
   Variables: Variables;
 };

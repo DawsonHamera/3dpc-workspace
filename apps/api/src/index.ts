@@ -2,16 +2,18 @@ import { Hono } from "hono";
 
 import { dbMiddleware } from "./middleware/db";
 
-import auth from "./features/auth/routes";
-import users from "./features/users/routes";
+import authRoutes from "./features/auth/routes";
+import userRoutes from "./features/users/routes";
 
 import type { Env } from "./types";
 import { AppError } from "./lib/errors";
+import fileRoutes from "./features/files/routes";
 
 const app = new Hono<Env>()
   .use("*", dbMiddleware)
-  .route("/users", users)
-  .route("/auth", auth)
+  .route("/users", userRoutes)
+  .route("/auth", authRoutes)
+  .route("/files", fileRoutes)
   .onError((err, c) => {
 
     if (err instanceof AppError) {

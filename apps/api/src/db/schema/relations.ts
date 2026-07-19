@@ -3,6 +3,7 @@ import { relations } from "drizzle-orm";
 import { users } from "./users";
 import { roles } from "./roles";
 import { sessions } from "./sessions";
+import { files } from "./files";
 
 
 export const usersRelations = relations(
@@ -14,6 +15,11 @@ export const usersRelations = relations(
     }),
 
     sessions: many(sessions),
+
+    avatar: one(files, {
+      fields: [users.avatarFileId],
+      references: [files.id],
+    }),
   })
 );
 

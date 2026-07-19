@@ -15,7 +15,7 @@ export const requireRole = (...allowedRoles: string[]) => {
       );
     }
 
-    if (!allowedRoles.includes(user.role.name)) {
+    if (!allowedRoles.includes(user.role)) {
       return c.json(
         {
           error: "Forbidden",

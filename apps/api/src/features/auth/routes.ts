@@ -6,21 +6,34 @@ import { zValidator } from "@hono/zod-validator";
 import { validateJson } from "../../lib/validation";
 import { requireAuth } from "../../middleware/auth";
 import { AppError } from "../../lib/errors";
+import { getUserByIdWithRoles } from "../users/service";
 
 const authRoutes = new Hono<Env>()
 
     .get("/me", requireAuth, async (c) => {
-        const user = c.get("user");
+        const userId = c.get("user")?.id;
+
+        if (!userId) {
+            return c.json({
+                user: null
+            });
+        }
+
+        const db = c.get("db");
+
+        const user = await getUserByIdWithRoles(db, userId);
 
         if (!user) {
             return c.json({
                 user: null
             });
         }
+
         return c.json({
             user: {
                 id: user.id,
                 name: user.name,
+                avatarId: user.avatarFileId,
                 role: user.role,
             }
         });

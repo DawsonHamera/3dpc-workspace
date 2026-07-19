@@ -2,3 +2,4 @@ export * from "./users";
 export * from "./roles";
 export * from "./sessions";
 export * from "./relations";
+export * from "./files";

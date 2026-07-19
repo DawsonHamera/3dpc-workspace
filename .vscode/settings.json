@@ -1,5 +1,19 @@
 {
 	"files.associations": {
 		"wrangler.json": "jsonc"
+	},
+
+	"files.watcherExclude": {
+		"**/node_modules/**": true,
+		"**/.git/**": true,
+		"**/dist/**": true,
+		"**/.next/**": true,
+		"**/.turbo/**": true
+	},
+
+	"search.exclude": {
+		"**/node_modules": true,
+		"**/dist": true,
+		"**/.git": true
 	}
 }
