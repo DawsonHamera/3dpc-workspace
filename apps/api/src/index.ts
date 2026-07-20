@@ -8,12 +8,28 @@ import userRoutes from "./features/users/routes";
 import type { Env } from "./types";
 import { AppError } from "./lib/errors";
 import fileRoutes from "./features/files/routes";
+import { cors } from "hono/cors";
 
 const app = new Hono<Env>()
   .use("*", dbMiddleware)
   .route("/users", userRoutes)
   .route("/auth", authRoutes)
   .route("/files", fileRoutes)
+  .get("/health", (c) => {
+    return c.json({
+      status: "ok"
+    });
+  })
+  .use(
+    "*",
+    cors({
+      origin: [
+        "http://localhost:5173",
+        "https://3dpc-workspace.pages.dev",
+      ],
+      credentials: true,
+    })
+  )
   .onError((err, c) => {
 
     if (err instanceof AppError) {
