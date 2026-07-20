@@ -12,14 +12,6 @@ import { cors } from "hono/cors";
 
 const app = new Hono<Env>()
   .use("*", dbMiddleware)
-  .route("/users", userRoutes)
-  .route("/auth", authRoutes)
-  .route("/files", fileRoutes)
-  .get("/health", (c) => {
-    return c.json({
-      status: "ok"
-    });
-  })
   .use(
     "*",
     cors({
@@ -30,6 +22,14 @@ const app = new Hono<Env>()
       credentials: true,
     })
   )
+  .route("/users", userRoutes)
+  .route("/auth", authRoutes)
+  .route("/files", fileRoutes)
+  .get("/health", (c) => {
+    return c.json({
+      status: "ok"
+    });
+  })
   .onError((err, c) => {
 
     if (err instanceof AppError) {
