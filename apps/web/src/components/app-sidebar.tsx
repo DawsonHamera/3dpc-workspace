@@ -183,14 +183,21 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
-  const { user } = useAuth().data!;
-  const { data: storageMetrics, isLoading, error } = useStorageMetrics();
+  const { data: userData, isLoading } = useAuth();
+
+  const user = userData?.user;
+
+  const { data: storageMetrics, isLoading: isStorageLoading, error } = useStorageMetrics();
 
   const API_URL = "http://localhost:8787"
   console.log(user)
   const avatarUrl = user?.avatarId
     ? `${API_URL}/files/${user.avatarId}`
     : "/default-avatar.png";
+
+  if (isLoading || !user) {
+    return null;
+  }
 
   return (
     <Sidebar collapsible="icon" {...props}>
