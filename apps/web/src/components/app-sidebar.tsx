@@ -189,7 +189,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const { data: storageMetrics, isLoading: isStorageLoading, error } = useStorageMetrics();
 
-  const API_URL = "http://localhost:8787"
+  const API_URL = import.meta.env.VITE_API_URL ?? "";
+
   console.log(user)
   const avatarUrl = user?.avatarId
     ? `${API_URL}/files/${user.avatarId}`

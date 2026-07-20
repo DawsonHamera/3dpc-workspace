@@ -122,7 +122,7 @@ const fileRoutes = new Hono<Env>()
     .get(
         "/:id",
         requireAuth,
-        requireRole("Admin", "Owner", "Member"),
+        requireRole("Admin", "Owner", "Member", "Guest"),
         async (c) => {
 
             const { id } = c.req.param();
