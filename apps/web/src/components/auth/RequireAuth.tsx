@@ -1,12 +1,20 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { Spinner } from "../ui/spinner";
 
 export function RequireAuth() {
-  const user = useAuth().data;
+    const {
+        data,
+        isLoading
+    } = useAuth();
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+    if (isLoading) {
+        return <Spinner />;
+    }
 
-  return <Outlet />;
+    if (!data) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return <Outlet />;
 }

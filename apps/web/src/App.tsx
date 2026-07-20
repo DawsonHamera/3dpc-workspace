@@ -21,11 +21,14 @@ export function RedirectIfAuth() {
         return <Spinner />;
     }
 
-    if (!isLoading && (error || !data)) {
-        return <Navigate to="/login" />;
+    if (data) {
+        return <Navigate to="/dashboard" replace />;
     }
+
     return <Outlet />;
 }
+
+
 
 const App: React.FC = () => {
 
