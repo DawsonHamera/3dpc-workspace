@@ -29,7 +29,7 @@ export function RedirectIfAuth() {
 
 const App: React.FC = () => {
 
-    //Temp comment to test auto-deployment. Remove this comment after testing.
+    //Temp comment to test auto-deployment. Remove this comment after testing. Second comment to test auto-deployment. Remove this comment after testing.
 
     return (
         <OneSignalProvider>
