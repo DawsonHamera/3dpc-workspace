@@ -193,7 +193,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   console.log(user)
   const avatarUrl = user?.avatarId
-    ? `${API_URL}/files/${user.avatarId}`
+    ? `${API_URL}files/${user.avatarId}`
     : "/default-avatar.png";
 
   if (isLoading || !user) {
