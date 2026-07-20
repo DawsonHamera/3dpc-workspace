@@ -42,7 +42,7 @@ const App: React.FC = () => {
                         <Route path="account" element={<AccountPanel />} />
                     </Route>
                 </Route>
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route element={<RedirectIfAuth />}>
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
