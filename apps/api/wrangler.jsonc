@@ -24,7 +24,17 @@
 			"bucket_name": "3dpc-files",
 			"preview_bucket_name": "3dpc-files-dev"
 		}
-	]
+	],
+	"env": {
+		"production": {
+			"r2_buckets": [
+				{
+					"binding": "FILES",
+					"bucket_name": "3dpc-prod"
+				}
+			]
+		}
+	}
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
