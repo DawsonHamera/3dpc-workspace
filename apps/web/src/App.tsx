@@ -21,7 +21,7 @@ export function RedirectIfAuth() {
         return <Spinner />;
     }
 
-    if (error || !data) {
+    if (!isLoading && (error || !data)) {
         return <Navigate to="/login" />;
     }
     return <Outlet />;
