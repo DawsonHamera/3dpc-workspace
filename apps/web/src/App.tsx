@@ -7,15 +7,23 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import LoginPage from "./pages/login/LoginPage";
 import RegisterPage from "./pages/login/RegisterPage";
 import AccountPanel from "./pages/dashboard/AccountPanel";
+import { Spinner } from "./components/ui/spinner";
 
 
 export function RedirectIfAuth() {
-    const user = useAuth().data;
+    const {
+        data,
+        isLoading,
+        error
+    } = useAuth();
 
-    if (user) {
-        return <Navigate to="/dashboard" replace />;
+    if (isLoading) {
+        return <Spinner />;
     }
 
+    if (error || !data) {
+        return <Navigate to="/login" />;
+    }
     return <Outlet />;
 }
 

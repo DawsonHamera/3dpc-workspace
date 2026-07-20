@@ -11,8 +11,7 @@ import fileRoutes from "./features/files/routes";
 import { cors } from "hono/cors";
 
 const app = new Hono<Env>()
-  .use("*", dbMiddleware)
-  .use(
+.use(
     "*",
     cors({
       origin: [
@@ -22,6 +21,7 @@ const app = new Hono<Env>()
       credentials: true,
     })
   )
+  .use("*", dbMiddleware)
   .route("/users", userRoutes)
   .route("/auth", authRoutes)
   .route("/files", fileRoutes)

@@ -67,7 +67,7 @@ const authRoutes = new Hono<Env>()
                 `session=${token}`,
                 "HttpOnly",
                 "Secure",
-                "SameSite=Strict",
+                "SameSite=None",
                 "Path=/",
                 "Max-Age=2592000",
             ].join("; ")
