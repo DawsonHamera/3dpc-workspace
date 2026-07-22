@@ -17,24 +17,38 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { MoreHorizontalIcon, FolderIcon, ArrowRightIcon, Trash2Icon } from "lucide-react"
+import { Spinner } from "./ui/spinner"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
-export function NavProjects({
-  projects,
-}: {
+
+type NavProjectsProps = {
   projects: {
     name: string
-    url: string
+    slug: string
     icon: React.ReactNode
   }[]
-}) {
+  isLoading?: boolean
+}
+
+export function NavProjects({ projects, isLoading }: NavProjectsProps) {
+
+  const [revealedProjects, setRevealedProjects] = useState(5);
+
   const { isMobile } = useSidebar()
+
+  const navigate = useNavigate();
+
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Projects</SidebarGroupLabel>
+      <SidebarGroupLabel className="flex items-center gap-2">
+        Projects
+        {isLoading && <Spinner />}
+      </SidebarGroupLabel>
       <SidebarMenu>
-        {projects.map((item) => (
+        {projects.slice(0, revealedProjects).map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton render={<a href={item.url} />}>
+            <SidebarMenuButton onClick={() => navigate(`/dashboard/project/${item.slug}`)}>
               {item.icon}
               <span>{item.name}</span>
             </SidebarMenuButton>
@@ -76,12 +90,17 @@ export function NavProjects({
             </DropdownMenu>
           </SidebarMenuItem>
         ))}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontalIcon className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        {projects.length > revealedProjects && (
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              className="text-sidebar-foreground/70"
+              onClick={() => setRevealedProjects((prev) => prev + 3)}
+            >
+              <MoreHorizontalIcon className="text-sidebar-foreground/70" />
+              <span>More</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
       </SidebarMenu>
     </SidebarGroup>
   )

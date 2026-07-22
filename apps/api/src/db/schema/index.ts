@@ -3,3 +3,7 @@ export * from "./roles";
 export * from "./sessions";
 export * from "./relations";
 export * from "./files";
+export * from "./project_files";
+export * from "./project_members";
+export * from "./projects";
+export * from "./project_updates";

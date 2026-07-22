@@ -18,6 +18,8 @@ import { useAuth } from "@/features/auth/hooks/useAuth"
 import { Progress, ProgressLabel, ProgressValue } from "./ui/progress"
 import { useStorageMetrics } from "@/features/metrics/hooks/useStorageMetrics"
 import { Separator } from "./ui/separator"
+import { useProjects } from "@/features/projects/useProjects"
+import { useMemo } from "react"
 
 
 const data = {
@@ -185,9 +187,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const { data: userData, isLoading } = useAuth();
 
+  const { data: projectsData, isLoading: isProjectsLoading } = useProjects();
+
   const user = userData?.user;
 
   const { data: storageMetrics, isLoading: isStorageLoading, error } = useStorageMetrics();
+
+  const projects = useMemo(() => {
+    if (isProjectsLoading || !projectsData) {
+      return [];
+    }
+
+    return projectsData.map((project) => ({
+      name: project.name,
+      slug: project.slug,
+      icon: (
+        <BoxIcon />
+      ),
+    }));
+  }, [projectsData, isProjectsLoading]);
 
   const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -207,7 +225,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects projects={projects} isLoading={isProjectsLoading} />
       </SidebarContent>
       <SidebarFooter className="gap-5">
         <Progress value={storageMetrics?.percentage || 0} className="w-full max-w-sm">
