@@ -15,7 +15,7 @@ import SplashPanel from "./pages/dashboard/SplashPanel";
 
 export const router = createBrowserRouter([
     {
-        loader: requireAuth, 
+        loader: requireAuth,
         errorElement: <ErrorPage />,
         children: [
             {
@@ -23,7 +23,7 @@ export const router = createBrowserRouter([
                 element: <Dashboard />,
                 children: [
                     {
-                        path: "",
+                        index: true,
                         element: <SplashPanel />,
                     },
                     {
@@ -41,6 +41,10 @@ export const router = createBrowserRouter([
                 ],
             },
         ],
+    },
+    {
+        path: "/",
+        element: <Navigate to="/dashboard" replace />,
     },
     {
         loader: redirectIfAuth,
