@@ -17,12 +17,31 @@ import { BotIcon, BookOpenIcon, BoxIcon, CoinsIcon, GraduationCapIcon, LayoutDas
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { Progress, ProgressLabel, ProgressValue } from "./ui/progress"
 import { useStorageMetrics } from "@/features/metrics/hooks/useStorageMetrics"
-import { Separator } from "./ui/separator"
 import { useProjects } from "@/features/projects/useProjects"
 import { useMemo } from "react"
 
-
-const data = {
+const data: {
+  teams: {
+    name: string
+    logo: React.ReactNode
+    plan: string
+  }[]
+  navMain: {
+    title: string
+    onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
+    icon?: React.ReactNode
+    isActive?: boolean
+    items?: {
+      title: string
+      onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
+    }[]
+  }[]
+  projects: {
+    name: string
+    url: string
+    icon: React.ReactNode
+  }[]
+} = {
 
   teams: [
     {
@@ -44,7 +63,11 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      onClick: (navigate, location) => {
+        if (location.pathname !== "/dashboard") {
+          navigate("/dashboard");
+        }
+      },
       icon: (
         <LayoutDashboardIcon />
       ),
@@ -53,106 +76,178 @@ const data = {
 
     {
       title: "Printing",
-      url: "#",
+      onClick: (navigate, location) => {
+        if (location.pathname !== "/printing") {
+          navigate("/printing");
+        }
+      },
       icon: (
         <PrinterIcon />
       ),
       items: [
         {
           title: "Print Queue",
-          url: "/prints/queue",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/dashboard") {
+              navigate("/dashboard");
+            }
+          },
         },
         {
           title: "Active Printers",
-          url: "/printers",
+          onClick: (navigate, location) => {
+              navigate("/printers");
+          },
         },
         {
           title: "Print History",
-          url: "/prints/history",
+          onClick: (navigate, location) => {
+              navigate("/printers/history");
+          }
         },
       ],
     },
 
     {
       title: "Designs",
-      url: "#",
+      onClick: (navigate, location) => {
+        if (location.pathname !== "/designs") {
+          navigate("/designs");
+        }
+      },
       icon: (
         <BoxIcon />
       ),
       items: [
         {
           title: "Model Library",
-          url: "/models",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/models") {
+              navigate("/models");
+            }
+          },
         },
         {
           title: "Upload Model",
-          url: "/models/upload",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/models/upload") {
+              navigate("/models/upload");
+            }
+          },
         },
         {
           title: "My Designs",
-          url: "/models/mine",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/models/mine") {
+              navigate("/models/mine");
+            }
+          },
         },
       ],
     },
 
     {
       title: "Club Management",
-      url: "#",
+      onClick: (navigate, location) => {
+        if (location.pathname !== "/management") {
+          navigate("/management");
+        }
+      },
       icon: (
         <UsersIcon />
       ),
       items: [
         {
           title: "Members",
-          url: "/members",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/members") {
+              navigate("/members");
+            }
+          },
         },
         {
           title: "Projects",
-          url: "/projects",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/dashboard") {
+              navigate("/dashboard");
+            }
+          }
         },
         {
           title: "Announcements",
-          url: "/announcements",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/announcements") {
+              navigate("/announcements");
+            }
+          },
         },
       ],
     },
 
     {
       title: "Resources",
-      url: "#",
+      onClick: (navigate, location) => {
+        if (location.pathname !== "/resources") {
+          navigate("/resources");
+        }
+      },
       icon: (
         <BookOpenIcon />
       ),
       items: [
         {
           title: "Printer Guides",
-          url: "/guides/printers",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/guides/printers") {
+              navigate("/guides/printers");
+            }
+          },
         },
         {
           title: "Filament Guide",
-          url: "/guides/materials",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/guides/materials") {
+              navigate("/guides/materials");
+            }
+          },
         },
         {
           title: "Safety",
-          url: "/guides/safety",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/guides/safety") {
+              navigate("/guides/safety");
+            }
+          },
         },
       ],
     },
 
     {
       title: "Settings",
-      url: "#",
+      onClick: (navigate, location) => {
+        if (location.pathname !== "/settings") {
+          navigate("/settings");
+        }
+      },
       icon: (
         <SettingsIcon />
       ),
       items: [
         {
           title: "Profile",
-          url: "/settings/profile",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/settings/profile") {
+              navigate("/settings/profile");
+            }
+          },
         },
         {
           title: "Club Settings",
-          url: "/settings/club",
+          onClick: (navigate, location) => {
+            if (location.pathname !== "/settings/club") {
+              navigate("/settings/club");
+            }
+          },
         },
       ],
     },
@@ -209,10 +304,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const API_URL = import.meta.env.VITE_API_URL ?? "";
 
-  console.log(user)
+
   const avatarUrl = user?.avatarId
-    ? `${API_URL}files/${user.avatarId}`
+    ? `${API_URL}/files/${user.avatarId}/download`
     : "/default-avatar.png";
+
+  console.log("Avatar URL:", avatarUrl);
 
   if (isLoading || !user) {
     return null;

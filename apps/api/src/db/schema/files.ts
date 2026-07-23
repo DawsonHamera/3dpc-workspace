@@ -6,6 +6,7 @@ import {
     timestamp,
     pgEnum,
     jsonb,
+    boolean,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
 
@@ -44,14 +45,25 @@ export const files = pgTable("files", {
     type: fileTypeEnum("type")
         .notNull(),
 
+    isTemplate: boolean("is_template")
+        .notNull()
+        .default(false),
+
     metadata: jsonb("metadata"),
 
     uploadedBy: uuid("uploaded_by")
         .notNull()
         .references(() => users.id),
 
+    lastEditedBy: uuid("last_edited_by")
+        .references(() => users.id),
 
     createdAt: timestamp("created_at")
         .defaultNow()
         .notNull(),
+
+    updatedAt: timestamp("updated_at")
+        .defaultNow()
+        .notNull(),
+
 });

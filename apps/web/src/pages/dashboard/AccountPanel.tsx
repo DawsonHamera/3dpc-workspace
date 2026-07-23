@@ -25,7 +25,6 @@ import {
     Image,
 } from "lucide-react";
 import { useUpdateAvatar } from "@/features/users/hooks/useUpdateAvatar";
-import { SiteHeader } from "@/components/site-header";
 
 const AccountPanel = () => {
 

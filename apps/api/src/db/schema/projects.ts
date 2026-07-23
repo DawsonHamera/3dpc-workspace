@@ -8,6 +8,7 @@ import {
 import { projectFiles } from "./project_files";
 import { relations } from "drizzle-orm/relations";
 import { projectMembers } from "./project_members";
+import { User } from "./users";
 
 export const projects = pgTable("projects", {
     id: uuid("id")

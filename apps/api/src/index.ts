@@ -10,6 +10,7 @@ import { AppError } from "./lib/errors";
 import fileRoutes from "./features/files/routes";
 import { cors } from "hono/cors";
 import { projectRoutes } from "./features/projects/routes";
+import { ZodError } from "zod/v3";
 
 const app = new Hono<Env>()
 .use(
@@ -35,31 +36,40 @@ const app = new Hono<Env>()
   .onError((err, c) => {
 
     if (err instanceof AppError) {
-      const status = err.status as Parameters<typeof c.json>[1];
-
-      return c.json(
-        {
-          error: {
-            code: err.code,
-            message: err.message,
-          },
-        },
-        status
-      );
+        return c.json(
+            {
+                error: {
+                    code: err.code,
+                    message: err.message,
+                },
+            },
+            err.status
+        );
     }
 
+    if (err instanceof ZodError) {
+        return c.json(
+            {
+                error: {
+                    code: "VALIDATION_ERROR",
+                    message: "Invalid request data",
+                    details: err.flatten(),
+                },
+            },
+            400
+        );
+    }
 
     console.error(err);
 
-
     return c.json(
-      {
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Something went wrong",
+        {
+            error: {
+                code: "INTERNAL_ERROR",
+                message: "Something went wrong",
+            },
         },
-      },
-      500
+        500
     );
   });
 

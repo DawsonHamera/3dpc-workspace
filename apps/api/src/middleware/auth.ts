@@ -1,5 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { getSession } from "../features/auth/service";
+import { AppError } from "../lib/errors";
 
 export const requireAuth = createMiddleware(async (c, next) => {
   const cookieHeader = c.req.header("Cookie");
@@ -10,11 +11,10 @@ export const requireAuth = createMiddleware(async (c, next) => {
 
 
   if (!token) {
-    return c.json(
-      {
-        error: "Unauthorized",
-      },
-      401
+    throw new AppError(
+      401,
+      "Unauthorized",
+      "Session token missing",
     );
   }
 
@@ -28,22 +28,20 @@ export const requireAuth = createMiddleware(async (c, next) => {
 
 
   if (!session) {
-    return c.json(
-      {
-        error: "Invalid session",
-      },
-      401
+    throw new AppError(
+      401,
+      "Unauthorized",
+      "Invalid session",
     );
   }
 
 
   // Optional: reject expired sessions
   if (session.expiresAt < new Date()) {
-    return c.json(
-      {
-        error: "Session expired",
-      },
-      401
+    throw new AppError(
+      401,
+      "Unauthorized",
+      "Session expired",
     );
   }
 

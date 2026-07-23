@@ -48,7 +48,7 @@ export function NavProjects({ projects, isLoading }: NavProjectsProps) {
       <SidebarMenu>
         {projects.slice(0, revealedProjects).map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton onClick={() => navigate(`/dashboard/project/${item.slug}`)}>
+            <SidebarMenuButton onClick={() => navigate(`/dashboard/projects/${item.slug}`)}>
               {item.icon}
               <span>{item.name}</span>
             </SidebarMenuButton>

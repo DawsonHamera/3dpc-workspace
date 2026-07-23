@@ -3,7 +3,7 @@ import { Env } from "../../types";
 import { deleteUser, getUserByIdWithRoles, getUsersWithRoles, updateUserAvatar } from "./service";
 import { requireRole } from "../../middleware/role";
 import { requireAuth } from "../../middleware/auth";
-import { saveFile } from "../files/service";
+import { handleFileRemoval, handleFileUpload, saveFile } from "../files/service";
 import { R2Storage } from "../../services/storage";
 
 function sanitizeFilename(name: string) {
@@ -46,7 +46,15 @@ const usersRoutes = new Hono<Env>()
         "/avatar",
         requireAuth,
         async (c) => {
+            const body = await c.req.parseBody();
+
             const user = c.get("user");
+
+            const file = body.file;
+
+            const db = c.get("db");
+
+            const storage = new R2Storage(c.env.FILES);
 
             if (!user) {
                 return c.json(
@@ -55,65 +63,44 @@ const usersRoutes = new Hono<Env>()
                 );
             }
 
-            const body = await c.req.parseBody();
-
-            const file = body.file;
-
-            if (!(file instanceof File)) {
+            if (!file) {
                 return c.json(
-                    { error: "No avatar uploaded" },
+                    { error: "No file provided" },
                     400
                 );
             }
+            console.log("Uploading avatar for user:", user.id);
 
-            if (!file.type.startsWith("image/")) {
+            const userData = await getUserByIdWithRoles(db, user.id);
+
+            if (!userData) {
                 return c.json(
-                    { error: "Avatar must be an image" },
-                    400
+                    { error: "User not found" },
+                    404
                 );
             }
 
-            const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-
-            if (file.size > MAX_SIZE) {
-                return c.json(
-                    {
-                        error: "Avatar must be smaller than 5MB",
-                    },
-                    413
+            if (userData.avatarFileId) {
+                console.log("Deleting old avatar for user:", user.id);
+                await updateUserAvatar(
+                    db,
+                    user.id,
+                    null
                 );
+                await handleFileRemoval(db, storage, userData.avatarFileId);
             }
 
-            const db = c.get("db");
-
-            // create file record
-            const fileId = crypto.randomUUID();
-
-            const safeName = sanitizeFilename(file.name);
-
-            const key = `avatars/${fileId}/${safeName}`;
-
-            const storage = new R2Storage(
-                c.env.FILES
-            );
-
-            await storage.upload(
-                key,
-                file
-            );
-
-            const savedFile = await saveFile(
+            const savedFile = await handleFileUpload({
                 db,
-                {
-                    file,
-                    safeName,
-                    key,
-                    uploadedBy: user.id,
-                    metadata: {
-                        purpose: "avatar",
-                    },
+                storage,
+                file,
+                uploadedBy: user.id,
+                options: {
+                    requiredTypes: ["image/png", "image/jpeg", "image/jpg", "image/gif"],
+                    maxFileSize: (5 * 1024 * 1024), // 5MB
+                    location: "avatars"
                 }
-            );
+            });
 
             // update user reference
             await updateUserAvatar(

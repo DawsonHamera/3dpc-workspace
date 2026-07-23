@@ -1,19 +1,21 @@
 import { ProjectFilesTable } from "@/components/project-files-table";
+import { ProjectMembersTable } from "@/components/project-members-table";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
 import { Spinner } from "@/components/ui/spinner";
-import { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useProjectBySlug } from "@/features/projects/useProjectBySlug";
-import { formatBytes, formatDate } from "@/lib/helpers";
-import { Button } from "@base-ui/react";
-import { FolderIcon, KeyIcon } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { FolderIcon, KeyIcon, PlusCircle } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const ProjectPanel = () => {
     const { slug } = useParams<{ slug: string }>();
     const { data: projectData, isLoading: isProjectLoading } = useProjectBySlug(slug || "");
 
     const totalStorage = projectData?.files.reduce((acc, file) => acc + file.size, 0) || 0;
+
+    const navigate = useNavigate();
 
     if (isProjectLoading) {
         return <Spinner />;
@@ -32,6 +34,19 @@ export const ProjectPanel = () => {
 
     return (
         <div className="flex flex-1 flex-col gap-10">
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem className="hidden md:block">
+                        <BreadcrumbLink onClick={() => navigate("/dashboard")}>
+                            Projects
+                        </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator className="hidden md:block" />
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>{projectData.name}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
             <div>
                 <h1 className="text-2xl font-bold">
                     {projectData.name}
@@ -40,10 +55,13 @@ export const ProjectPanel = () => {
                     Project ID: {projectData.id}
                 </p>
             </div>
-            
+
             <ProjectFilesTable
                 files={projectData.files}
             />
+
+            <ProjectMembersTable members={projectData.members} />
+
             <Card>
                 <CardHeader>
                     <CardTitle>

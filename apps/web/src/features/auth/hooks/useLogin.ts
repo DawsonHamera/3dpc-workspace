@@ -1,8 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../api/client";
+import { useRevalidator } from "react-router-dom";
 
 export function useLogin() {
   const queryClient = useQueryClient();
+
+  const revalidator = useRevalidator(); 
 
   return useMutation({
     mutationFn: async (data: {
@@ -20,10 +23,11 @@ export function useLogin() {
       return res.json();
     },
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      await queryClient.refetchQueries({
         queryKey: ["auth", "me"],
       });
+      revalidator.revalidate();
     },
   });
 }

@@ -25,8 +25,6 @@ const LoginPage: React.FC = () => {
 
         try {
             await loginMutation.mutateAsync(credentials);
-            
-            navigate("/dashboard");
 
         } catch (error) {
          setError(

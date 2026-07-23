@@ -41,7 +41,6 @@ export function NavUser({
 }: {
   user: {
     name: string
-    email: string
     avatar: string
   }
 }) {
@@ -50,11 +49,10 @@ export function NavUser({
   const logout = useLogout();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout.mutate()
-    navigate("/login")
-  }
-  console.log(user.avatar)
+  const handleLogout = async () => {
+    await logout.mutateAsync();
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -70,7 +68,6 @@ export function NavUser({
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
-              <span className="truncate text-xs">{user.email}</span>
             </div>
             <ChevronsUpDownIcon className="ml-auto size-4" />
           </DropdownMenuTrigger>

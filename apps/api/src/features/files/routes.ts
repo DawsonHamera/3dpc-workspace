@@ -1,9 +1,12 @@
 import { Hono } from "hono";
 import { Env } from "../../types";
-import { deleteFile, getFileById, getStorageUsage, saveFile } from "./service";
+import { deleteFile, getFileById, getStorageUsage, handleFileUpdate, handleFileUpload, saveFile } from "./service";
 import { requireAuth } from "../../middleware/auth";
 import { requireRole } from "../../middleware/role";
 import { R2Storage } from "../../services/storage";
+import { AppError } from "../../lib/errors";
+import z from "zod";
+import { zValidator } from "@hono/zod-validator";
 
 
 function sanitizeFilename(name: string) {
@@ -12,10 +15,10 @@ function sanitizeFilename(name: string) {
         .slice(0, 100);
 }
 
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-
-const MAX_STORAGE = 5 * 1024 * 1024 * 1024; // 5GB
+const uploadSchema = z.object({
+    file: z.instanceof(File),
+    metadata: z.string().optional(),
+})
 
 
 const fileRoutes = new Hono<Env>()
@@ -28,102 +31,99 @@ const fileRoutes = new Hono<Env>()
 
             const body = await c.req.parseBody();
 
-            const metadataRaw = body.metadata;
+            const user = c.get("user");
 
             const file = body.file;
 
-            if (!(file instanceof File)) {
-                return c.json(
-                    { error: "No file uploaded" },
-                    400
-                );
-            }
-
-            if (file.size > MAX_FILE_SIZE) {
-                return c.json(
-                    {
-                        error: "File too large. Maximum size is 50MB."
-                    },
-                    413
-                );
-            }
-
-            const user = c.get("user");
-
-            if (!user) {
-                return c.json(
-                    { error: "There was an unexpected error while uploading." },
-                    400
-                );
-            }
-
-            let metadata = {};
-
-            if (metadataRaw) {
-                try {
-                    metadata = JSON.parse(
-                        metadataRaw.toString()
-                    );
-                } catch {
-                    return c.json(
-                        { error: "Invalid metadata JSON" },
-                        400
-                    );
-                }
-            }
-
-
-            const fileId = crypto.randomUUID();
-
-            const safeName = sanitizeFilename(file.name);
-
-            const key = `uploads/${fileId}/${safeName}`;
+            const db = c.get("db");
 
             const storage = new R2Storage(c.env.FILES);
 
-            await storage.upload(
-                key,
-                file
-            );
-
-            const db = c.get("db");
-
-
-            const currentUsage = await getStorageUsage(
-                db,
-                user.id
-            );
-
-            console.log({
-                currentUsage,
-                currentUsageType: typeof currentUsage,
-                fileSize: file.size,
-                fileSizeType: typeof file.size,
-            });
-
-            if (
-                currentUsage + file.size > MAX_STORAGE
-            ) {
-                return c.json(
-                    {
-                        error: "Storage quota exceeded"
-                    },
-                    413
+            if (!file) {
+                throw new AppError(
+                    400,
+                    "Bad Request",
+                    "No file provided",
                 );
             }
 
-            const savedFileId = await saveFile(db, { file, safeName, key, metadata, uploadedBy: user.id })
+            const savedFile = await handleFileUpload({
+                db,
+                storage,
+                file,
+                uploadedBy: user!.id
+            });
 
 
 
-            return c.json(savedFileId);
+            return c.json(savedFile.id);
         }
     )
-    .get(
+
+    .patch(
         "/:id",
+        requireAuth,
+        requireRole("Admin", "Owner", "Member"),
+        zValidator(
+            "form",
+            uploadSchema,
+            (result, c) => {
+                if (!result.success) {
+                    throw new AppError(
+                        400,
+                        "VALIDATION_ERROR",
+                        "Invalid upload data"
+                    );
+                }
+            }
+        ),
+
+        async (c) => {
+
+
+            const user = c.get("user");
+
+            const fileId = c.req.param("id");
+
+            const { file } = c.req.valid("form");
+
+            const db = c.get("db");
+
+            const storage = new R2Storage(c.env.FILES);
+
+
+            if (!file) {
+                throw new AppError(
+                    400,
+                    "Bad Request",
+                    "No file provided",
+                );
+            }
+
+            const savedFile = await handleFileUpdate({
+                db,
+                storage,
+                fileId,
+                file,
+                editedBy: user!.id
+            });
+
+
+            return c.json(savedFile.id);
+        }
+    )
+
+    .get(
+        "/:id/download",
         requireAuth,
         requireRole("Admin", "Owner", "Member", "Guest"),
         async (c) => {
+
+            console.log(
+                "DOWNLOAD REQUEST",
+                c.req.url,
+                c.req.header("host")
+            );
 
             const { id } = c.req.param();
             const db = c.get("db");
@@ -131,9 +131,10 @@ const fileRoutes = new Hono<Env>()
             const file = await getFileById(db, id);
 
             if (!file) {
-                return c.json(
-                    { error: "File not found" },
-                    404
+                throw new AppError(
+                    404,
+                    "FILE_NOT_FOUND",
+                    "File not found."
                 );
             }
 
@@ -142,9 +143,10 @@ const fileRoutes = new Hono<Env>()
             const object = await storage.get(file.key);
 
             if (!object) {
-                return c.json(
-                    { error: "Stored file missing" },
-                    404
+                throw new AppError(
+                    404,
+                    "STORED_FILE_MISSING",
+                    "Stored file missing"
                 );
             }
 
@@ -157,11 +159,33 @@ const fileRoutes = new Hono<Env>()
 
                         "Content-Length": object.size.toString(),
 
-                        "Cache-Control": "public, max-age=3600",
+                          "Cache-Control": "no-store",
                     },
                 }
             );
         })
+
+    .get(
+        "/:id",
+        requireAuth,
+        requireRole("Admin", "Owner", "Member", "Guest"),
+        async (c) => {
+            const { id } = c.req.param();
+            const db = c.get("db");
+
+            const file = await getFileById(db, id);
+
+            if (!file) {
+                throw new AppError(
+                    404,
+                    "FILE_NOT_FOUND",
+                    "File not found."
+                );
+            }
+
+            return c.json(file);
+        }
+    )
 
     .delete(
         "/:id",
@@ -178,9 +202,10 @@ const fileRoutes = new Hono<Env>()
             );
 
             if (!file) {
-                return c.json(
-                    { error: "File not found" },
-                    404
+                throw new AppError(
+                    404,
+                    "FILE_NOT_FOUND",
+                    "File not found."
                 );
             }
 
@@ -210,9 +235,10 @@ const fileRoutes = new Hono<Env>()
             const user = c.get("user");
 
             if (!user) {
-                return c.json(
-                    { error: "Unauthorized" },
-                    401
+                throw new AppError(
+                    401,
+                    "UNAUTHORIZED",
+                    "Unauthorized"
                 );
             }
 

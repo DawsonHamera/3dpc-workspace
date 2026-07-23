@@ -19,6 +19,7 @@ export type Bindings = {
 export type Variables = {
   db: Db;
   user: UserContext | null;
+  projectMembership: string | null;
 };
 
 export type Env = {

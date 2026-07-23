@@ -26,7 +26,7 @@ export const deleteUser = async (db: Db, userId: string) => {
 export async function updateUserAvatar(
     db: Db,
     userId: string,
-    fileId: string
+    fileId: string | null
 ) {
     await db
         .update(users)

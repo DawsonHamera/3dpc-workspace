@@ -8,8 +8,14 @@ import {
 } from "@tanstack/react-table"
 
 import { formatDate, formatBytes } from "@/lib/helpers"
-import { Box, File, FileText, Image } from "lucide-react"
-import {Table, TableRow, TableHead, TableBody, TableCell, TableCaption, TableHeader } from "./ui/table"
+import { Box, File, FileText, Image, PlusCircle } from "lucide-react"
+import { Table, TableRow, TableHead, TableBody, TableCell, TableCaption, TableHeader, TableFooter } from "./ui/table"
+import { useNavigate } from "react-router-dom"
+import { Item, ItemActions, ItemContent, ItemHeader, ItemMedia, ItemTitle } from "./ui/item"
+import { Button } from "./ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { registry } from "@/pages/dashboard/FilePanel"
+import { FileActions } from "./file-actions"
 
 
 const typeToIconMap: Record<string, React.ReactNode> = {
@@ -26,6 +32,8 @@ export type ProjectFile = {
     size: number
     createdAt: string
 }
+
+
 
 
 const columns: ColumnDef<ProjectFile>[] = [
@@ -74,7 +82,14 @@ const columns: ColumnDef<ProjectFile>[] = [
             </div>
         ),
     },
+    {
+        id: "actions",
+        cell: ({ row }) => (
+            <FileActions file={row.original} />
+        )
+    }
 ]
+
 
 
 export function ProjectFilesTable({
@@ -88,6 +103,8 @@ export function ProjectFilesTable({
         columns,
         getCoreRowModel: getCoreRowModel(),
     })
+
+    const navigate = useNavigate()
 
 
     return (
@@ -129,7 +146,11 @@ export function ProjectFilesTable({
                                     .getRowModel()
                                     .rows
                                     .map(row => (
-                                        <TableRow key={row.id}>
+                                        <TableRow
+                                            key={row.id}
+                                            onClick={() => navigate(`files/${row.original.id}/edit`)}
+                                            className="cursor-pointer hover:bg-muted"
+                                        >
                                             {
                                                 row
                                                     .getVisibleCells()
@@ -160,6 +181,47 @@ export function ProjectFilesTable({
                     }
 
                 </TableBody>
+                <TableFooter>
+                    <TableRow>
+                        <TableCell colSpan={columns.length}>
+                            <Item className="w-full">
+                                <ItemMedia variant="icon">
+                                    <PlusCircle />
+                                </ItemMedia>
+
+                                <ItemContent>
+                                    <ItemTitle>
+                                        Add New File
+                                    </ItemTitle>
+                                </ItemContent>
+
+                                <ItemActions>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger render={<Button variant="outline" />}>
+                                            Create
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuGroup>
+                                                <DropdownMenuLabel>File Types</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => navigate(`files/${registry.document.template}/edit`)}>
+                                                    Document
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => navigate('/create/spreadsheet-template')}>
+                                                    Spreadsheet
+                                                </DropdownMenuItem>
+                                            </DropdownMenuGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+
+
+                                    <Button variant="outline">
+                                        Upload
+                                    </Button>
+                                </ItemActions>
+                            </Item>
+                        </TableCell>
+                    </TableRow>
+                </TableFooter>
 
             </Table>
         </div>
