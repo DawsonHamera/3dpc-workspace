@@ -5,12 +5,14 @@ import {
 
 import { api } from "../../../api/client";
 import { apiFetch } from "@/features/apiFetch";
+import { useRevalidator } from "react-router-dom";
 
 
 export function useRegister() {
 
     const queryClient = useQueryClient();
 
+    const revalidator = useRevalidator()
 
     return useMutation({
 
@@ -31,15 +33,11 @@ export function useRegister() {
         },
 
 
-        onSuccess: () => {
-
-            queryClient.invalidateQueries({
-                queryKey: [
-                    "auth",
-                    "me",
-                ],
+        onSuccess: async () => {
+            await queryClient.refetchQueries({
+                queryKey: ["auth", "me"],
             });
-
+            revalidator.revalidate();
         },
 
     });
