@@ -47,6 +47,6 @@ export function handleMutationError<T extends FieldValues>(
 
     setError("root", {
         type: "server",
-        message: "An unexpected error occurred.",
+        message: `An unexpected error occurred. Secret Stuff: ${err}`,
     });
 }
