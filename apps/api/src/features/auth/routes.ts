@@ -134,6 +134,25 @@ const authRoutes = new Hono<Env>()
             );
         }
 
+        const token = await createSession(
+            db,
+            userId
+        );
+
+
+        c.header(
+            "Set-Cookie",
+            [
+                `session=${token}`,
+                "HttpOnly",
+                "Secure",
+                "SameSite=None",
+                "Path=/",
+                "Max-Age=2592000",
+            ].join("; ")
+        );
+
+
         return c.json({
             success: true,
         });

@@ -53,11 +53,14 @@ export const files = pgTable("files", {
 
     uploadedBy: uuid("uploaded_by")
         .notNull()
-        .references(() => users.id),
+        .references(() => users.id, {
+            onDelete: "set null",
+        }),
 
     lastEditedBy: uuid("last_edited_by")
-        .references(() => users.id),
-
+        .references(() => users.id, {
+            onDelete: "set null",
+        }),
     createdAt: timestamp("created_at")
         .defaultNow()
         .notNull(),

@@ -19,18 +19,16 @@ const RegisterPage: React.FC = () => {
 
     const registerMutation = useRegister();
 
-    const loginMutation = useLogin();
-
     const isLoading =
-        registerMutation.isPending ||
-        loginMutation.isPending;
-
+        registerMutation.isPending
+        
     const handleRegister = async (
         data: RegisterData,
         setError: UseFormSetError<RegisterData>
     ) => {
         try {
             await registerMutation.mutateAsync(data);
+            navigate("/dashboard");
         } catch (err) {
             handleMutationError(err, setError);
         }

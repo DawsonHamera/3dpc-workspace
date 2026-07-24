@@ -1,3 +1,5 @@
+import bcrypt from "bcryptjs";
+
 export async function createSessionToken() {
   const bytes = crypto.getRandomValues(
     new Uint8Array(32)
@@ -26,4 +28,14 @@ export async function hashToken(token: string) {
   )
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+
+//Too much for worker, use for recovery
+export async function hashPassword(
+  password: string,
+  rounds: number
+) {
+  console.log("Hashing password with rounds:", rounds);
+  return await bcrypt.hash(password, rounds);
 }

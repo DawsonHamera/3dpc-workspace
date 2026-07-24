@@ -20,6 +20,7 @@ export type Variables = {
   db: Db;
   user: UserContext | null;
   projectMembership: string | null;
+  BCRYPT_ROUNDS: number;
 };
 
 export type Env = {

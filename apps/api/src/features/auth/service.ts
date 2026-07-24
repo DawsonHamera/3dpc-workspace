@@ -86,7 +86,7 @@ export const registerUser = async (
     name: string;
     password: string;
     grade?: string;
-  }
+  },
 ) => {
 
   const existingUser = await db.query.users.findFirst({
@@ -94,11 +94,11 @@ export const registerUser = async (
   });
 
   if (existingUser) {
-      throw new AppError(
-        409,
-        "EMAIL_EXISTS",
-        "Email is already registered"
-      );
+    throw new AppError(
+      409,
+      "EMAIL_EXISTS",
+      "Email is already registered"
+    );
   }
 
   const passwordHash = await hashToken(data.password);
