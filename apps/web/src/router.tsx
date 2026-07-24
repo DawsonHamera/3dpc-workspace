@@ -29,6 +29,7 @@ import AppProjectsPage from "./pages/app/AppProjectsPage";
 import AppCalendarPage from "./pages/app/AppCalendarPage";
 import AppProfilePage from "./pages/app/AppProfilePage";
 import AppChatPage from "./pages/app/AppChatPage";
+import DevPage from "./pages/dashboard/DevPage";
 
 export const router = createBrowserRouter([
     {
@@ -107,6 +108,10 @@ export const router = createBrowserRouter([
                             {
                                 path: "guides/safety-guide",
                                 element: <SafetyGuide />,
+                            },
+                            {
+                                path: "dev",
+                                element: <DevPage />,
                             }
                         ],
                     },

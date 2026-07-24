@@ -76,9 +76,9 @@ export default function ContactPage() {
                         </h2>
 
                         <p className="text-sm text-muted-foreground">
-                            Tuesdays
+                            Thursdays
                             <br />
-                            3:30 PM - 5:00 PM
+                            12:15 PM - 12:41 Pm (Lunch)
                         </p>
 
                     </CardContent>

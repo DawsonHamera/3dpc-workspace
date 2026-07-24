@@ -56,6 +56,8 @@ export const ProjectPage = () => {
 
             <ProjectFilesTable
                 files={projectData.files}
+                projectSlug={projectData.slug}
+
             />
 
             <ProjectMembersTable members={projectData.members} />

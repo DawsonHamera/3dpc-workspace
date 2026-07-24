@@ -19,8 +19,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 
 function SidebarItem(item: {
-  title: string; onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void; icon?: React.ReactNode; isActive?: boolean; items?: {
-    title: string
+  title: string; onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void; icon?: React.ReactNode; isActive?: boolean; titleColor?: string; items?: {
+    title: string,
+    titleColor?: string,
     onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
   }[]
 }): import("react").JSX.Element {
@@ -33,15 +34,16 @@ function SidebarItem(item: {
     <SidebarMenuItem key={item.title}>
       <SidebarMenuButton onClick={() => item.onClick(navigate, location)}>
         {item.icon}
-        <span>{item.title}</span>
+        <span className={item.titleColor ? `text-${item.titleColor}` : undefined}>{item.title}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
   )
 }
 
 function SidebarCollapsibleItem(item: {
-  title: string; onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void; icon?: React.ReactNode; isActive?: boolean; items?: {
-    title: string
+  title: string; onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void; icon?: React.ReactNode; isActive?: boolean; titleColor?: string; items?: {
+    title: string,
+    titleColor?: string,
     onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
   }[]
 }): import("react").JSX.Element {
@@ -68,7 +70,7 @@ function SidebarCollapsibleItem(item: {
         {item.items?.map((subItem) => (
           <SidebarMenuSubItem key={subItem.title}>
             <SidebarMenuSubButton onClick={() => subItem.onClick(navigate, location)}>
-              <span>{subItem.title}</span>
+              <span className={subItem.titleColor ? `text-${subItem.titleColor}` : undefined}>{subItem.title}</span>
             </SidebarMenuSubButton>
           </SidebarMenuSubItem>
         ))}
@@ -87,6 +89,7 @@ export function NavMain({
     onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
     icon?: React.ReactNode
     isActive?: boolean
+    titleColor?: string
     items?: {
       title: string
       onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void

@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/api/client";
-import type { ApiError } from "../types";
 import { apiFetch } from "../apiFetch";
 
 export type UploadMetadata = Record<string, unknown>;
@@ -47,6 +46,10 @@ export function useProjectFileUpload() {
 
             queryClient.invalidateQueries({
                 queryKey: ["files"],
+            });
+
+             queryClient.invalidateQueries({
+                queryKey: ["projects"],
             });
         },
     });

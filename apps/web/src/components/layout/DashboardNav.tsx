@@ -13,7 +13,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { BookOpenIcon, BoxIcon, LayoutDashboardIcon, PrinterIcon, SettingsIcon, UsersIcon } from "lucide-react"
+import { BookOpenIcon, BoxIcon, Construction, LayoutDashboardIcon, PrinterIcon, SettingsIcon, UsersIcon } from "lucide-react"
 import { useAuth } from "@/features/auth/hooks/useAuth"
 import { Progress, ProgressLabel, ProgressValue } from "../ui/progress"
 import { useStorageMetrics } from "@/features/metrics/hooks/useStorageMetrics"
@@ -27,6 +27,7 @@ export const data: {
     onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
     icon?: React.ReactNode
     isActive?: boolean
+    titleColor?: string
     items?: {
       title: string
       onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
@@ -47,7 +48,6 @@ export const data: {
       ),
       isActive: true,
     },
-
     {
       title: "Printing",
       onClick: (navigate, location) => {
@@ -70,13 +70,13 @@ export const data: {
         {
           title: "Active Printers",
           onClick: (navigate) => {
-              navigate("/dashboard/printers");
+            navigate("/dashboard/printers");
           },
         },
         {
           title: "Print History",
           onClick: (navigate) => {
-              navigate("/dashboard/printers/history");
+            navigate("/dashboard/printers/history");
           }
         },
       ],
@@ -225,6 +225,19 @@ export const data: {
         },
       ],
     },
+    {
+      title: "Development Updates",
+      onClick: (navigate, location) => {
+        if (location.pathname !== "/dashboard/dev") {
+          navigate("/dashboard/dev");
+        }
+      },
+      icon: (
+        <Construction className="text-accent" />
+      ),
+      isActive: true,
+      titleColor: "accent",
+    },
   ],
 };
 
@@ -234,7 +247,7 @@ export function DashboardNav({ ...props }: React.ComponentProps<typeof Sidebar>)
 
   const { data: projectsData, isLoading: isProjectsLoading } = useProjects();
 
-  const { data: storageMetrics} = useStorageMetrics();
+  const { data: storageMetrics } = useStorageMetrics();
 
   const projects = useMemo(() => {
     if (isProjectsLoading || !projectsData) {

@@ -16,7 +16,8 @@ import { Button } from "../../../components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "../../../components/ui/dropdown-menu"
 import { registry } from "@/pages/dashboard/FilePage"
 import { useDeleteFile } from "@/features/files/hooks/useDeleteFile"
-
+import { useRef } from "react"
+import { useProjectFileUpload } from "../useProjectFileUpload"
 
 const typeToIconMap: Record<string, React.ReactNode> = {
     "image": <Image className="h-4 w-4" />,
@@ -133,8 +134,10 @@ const columns: ColumnDef<ProjectFile>[] = [
 
 export function ProjectFilesTable({
     files,
+    projectSlug,
 }: {
     files: ProjectFile[]
+    projectSlug: string
 }) {
 
     const table = useReactTable({
@@ -144,6 +147,27 @@ export function ProjectFilesTable({
     })
 
     const navigate = useNavigate()
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const uploadFile = useProjectFileUpload();
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log("File upload triggered");
+
+        const file = e.target.files?.[0];
+
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            await uploadFile.mutate({
+                file: file,
+                projectSlug: projectSlug,
+            });
+        }
+    };
+
 
 
     return (
@@ -252,9 +276,25 @@ export function ProjectFilesTable({
                                         </DropdownMenuContent>
                                     </DropdownMenu>
 
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="any/*"
+                                        className="hidden"
+                                        onChange={handleFileUpload}
+                                    />
 
-                                    <Button variant="outline">
-                                        Upload
+                                    <Button
+                                        variant="outline"
+                                        disabled={uploadFile.isPending}
+                                        onClick={() =>
+                                            fileInputRef.current?.click()
+                                        }
+                                    >
+                                        {uploadFile.isPending
+                                            ? "Uploading..."
+                                            : "Upload"
+                                        }
                                     </Button>
                                 </ItemActions>
                             </Item>
