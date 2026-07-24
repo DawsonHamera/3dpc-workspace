@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useLogout } from "@/features/auth/hooks/useLogout";
-import { ChevronsUpDownIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
+import { BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 
 
@@ -66,7 +66,6 @@ export function NavUser({
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
             </div>
-            <ChevronsUpDownIcon className="ml-auto size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-fit"
@@ -94,7 +93,7 @@ export function NavUser({
                 />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/dashboard/membership")}>
                 <CreditCardIcon
                 />
                 Membership

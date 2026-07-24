@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { requireAuth } from "../../middleware/auth";
 import { Env } from "../../types";
 import { requireRole } from "../../middleware/role";
-import { checkForDuplicateFileInSameProject, confirmUserProjectMembership, createProject, deleteProject, getProjectBySlug, getProjectsForUser, getPublicProjects, saveProjectFile } from "./service";
+import { checkForDuplicateFileInSameProject, confirmUserProjectMembership, createProject, deleteProject, getProjectById, getProjectBySlug, getProjectsForUser, getPublicProjects, saveProjectFile } from "./service";
 import { R2Storage } from "../../services/storage";
 import { handleFileUpload } from "../files/service";
 import { requireProjectMembership } from "../../middleware/projectMembership";
@@ -10,6 +10,7 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { AppError } from "../../lib/errors";
 import { validateJson } from "../../lib/validation";
+import { AuditActions, auditLogger } from "../../services/auditLog";
 
 const uploadSchema = z.object({
     file: z.instanceof(File),
@@ -95,6 +96,8 @@ export const projectRoutes = new Hono<Env>()
 
             const user = c.get("user");
 
+            const audit = auditLogger(db);
+
             const { file } = c.req.valid("form");
 
             if (!user) {
@@ -144,6 +147,14 @@ export const projectRoutes = new Hono<Env>()
 
             await saveProjectFile(db, project.id, fileResult.id);
 
+            await audit.create({
+                userId: user.id,
+                action: AuditActions.PROJECT_FILE_UPLOADED,
+                resourceType: "file",
+                resourceId: fileResult.id,
+                description: `Uploaded file ${fileResult.originalName} to project ${project.slug}`,
+            });
+
             return c.json(
                 {
                     id: fileResult.id,
@@ -162,6 +173,8 @@ export const projectRoutes = new Hono<Env>()
             const db = c.get("db");
             const user = c.get("user");
 
+            const audit = auditLogger(db);
+
             if (!user) {
                 throw new AppError(
                     400,
@@ -175,6 +188,14 @@ export const projectRoutes = new Hono<Env>()
             const project = await createProject(db, {
                 ...body,
                 createdBy: user.id,
+            });
+
+            await audit.create({
+                userId: user.id,
+                action: AuditActions.PROJECT_CREATED,
+                resourceType: "project",
+                resourceId: project.id,
+                description: `Created project ${project.slug}`,
             });
 
             return c.json(
@@ -233,7 +254,22 @@ export const projectRoutes = new Hono<Env>()
 
             const db = c.get("db");
 
+            const user = c.get("user");
+
+            const audit = auditLogger(db);
+
+            const project = await getProjectById(db, id);
+
             await deleteProject(db, id);
+
+            
+            await audit.create({
+                userId: user?.id,
+                action: AuditActions.PROJECT_DELETED,
+                resourceType: "project",
+                resourceId: id,
+                description: `Deleted project ${project?.slug}`,
+            });
 
             return c.json(
                 {

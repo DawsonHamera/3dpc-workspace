@@ -41,3 +41,19 @@ export async function updateUserAvatar(
 export type UserWithRole = Awaited<
   ReturnType<typeof getUserByIdWithRoles>
 >;
+
+
+
+export const updateUser = async (db: Db, userId: string, data: Partial<typeof users.$inferInsert>) => {
+    await db
+        .update(users)
+        .set(data)
+        .where(
+            eq(users.id, userId)
+        );
+
+    const updatedUser = await getUserByIdWithRoles(db, userId);
+
+    return updatedUser;
+}
+

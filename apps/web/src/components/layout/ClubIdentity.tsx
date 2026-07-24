@@ -21,7 +21,11 @@ export function ClubIdentity() {
           onClick={() => navigate("/")}
         >
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground overflow-hidden">
-          <BoxIcon />
+           <img
+                        src="/images/logo.png"
+                        alt="3DPC"
+                        className="h-9 w-9"
+                    />
           </div>
 
           <div className="grid flex-1 text-left text-sm leading-tight">
@@ -30,7 +34,7 @@ export function ClubIdentity() {
             </span>
 
             <span className="truncate text-xs text-muted-foreground">
-              Student Organization
+              Del Oro High School
             </span>
           </div>
         </SidebarMenuButton>

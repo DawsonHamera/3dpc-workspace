@@ -13,6 +13,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { devFeatures, devLog } from "@/features/dev/data";
+import { Table, TableHead, TableBody, TableHeader, TableRow, TableCell } from "@/components/ui/table";
 
 
 const statusIcon = {
@@ -59,41 +60,64 @@ export default function DevPage() {
                 </div>
 
 
-                <div className="space-y-3">
+                <Card>
+                    <CardContent className="p-0">
 
-                    {devLog.map((entry) => (
-                        <Card key={entry.title}>
+                        <div className="overflow-x-auto">
 
-                            <CardContent className="p-5">
+                            <Table>
 
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>
+                                            Update
+                                        </TableHead>
 
-                                    <div>
-                                        <h3 className="font-semibold">
-                                            {entry.title}
-                                        </h3>
+                                        <TableHead>
+                                            Description
+                                        </TableHead>
 
-                                        <p className="mt-1 text-sm text-muted-foreground">
-                                            {entry.description}
-                                        </p>
-                                    </div>
+                                        <TableHead className="text-right">
+                                            Date
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
 
 
-                                    <span className="text-xs whitespace-nowrap text-muted-foreground">
-                                        {entry.date}
-                                    </span>
+                                <TableBody>
 
-                                </div>
+                                    {devLog.map((entry) => (
 
-                            </CardContent>
+                                        <TableRow key={entry.title}>
 
-                        </Card>
-                    ))}
+                                            <TableCell className="font-medium">
+                                                {entry.title}
+                                            </TableCell>
 
-                </div>
+
+                                            <TableCell className="max-w-xl text-muted-foreground">
+                                                {entry.description}
+                                            </TableCell>
+
+
+                                            <TableCell className="text-right whitespace-nowrap text-muted-foreground">
+                                                {entry.date}
+                                            </TableCell>
+
+                                        </TableRow>
+
+                                    ))}
+
+                                </TableBody>
+
+                            </Table>
+
+                        </div>
+
+                    </CardContent>
+                </Card>
 
             </section>
-
 
 
             {/* Major Features */}

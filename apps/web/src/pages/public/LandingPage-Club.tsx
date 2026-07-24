@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { QuoteCarousel } from "@/features/users/components/QuoteCarousel";
+import { QuoteCarousel } from "@/components/custom/QuoteCarousel";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileLandingPage from "./MobileLandingPage";
 

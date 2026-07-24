@@ -113,6 +113,15 @@ export function NavProjects({ projects, isLoading }: NavProjectsProps) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         )}
+        {
+          projects.length === 0 && (
+            <SidebarMenuItem>
+              <SidebarMenuButton className="text-sidebar-foreground/70">
+                <span>No projects available</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )
+        }
       </SidebarMenu>
       <DeleteDialog
         open={deleteQuery.open}

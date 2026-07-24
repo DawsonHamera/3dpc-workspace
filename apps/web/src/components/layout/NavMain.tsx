@@ -1,110 +1,235 @@
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
 import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
-import { ChevronRightIcon } from "lucide-react"
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
+
+import { ChevronRightIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import type { NavItem } from "./nav-config";
+
+
+type Props = {
+    items: NavItem[];
+    role?: string;
+};
 
 
 
-function SidebarItem(item: {
-  title: string; onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void; icon?: React.ReactNode; isActive?: boolean; titleColor?: string; items?: {
-    title: string,
-    titleColor?: string,
-    onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
-  }[]
-}): import("react").JSX.Element {
+const colorMap = {
+    accent: "text-accent",
+    destructive: "text-destructive",
+};
 
-  const navigate = useNavigate();
 
-  const location = useLocation();
 
-  return (
-    <SidebarMenuItem key={item.title}>
-      <SidebarMenuButton onClick={() => item.onClick(navigate, location)}>
-        {item.icon}
-        <span className={item.titleColor ? `text-${item.titleColor}` : undefined}>{item.title}</span>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  )
+function SidebarItem({
+    item,
+}: {
+    item: NavItem;
+}) {
+
+    const navigate = useNavigate();
+    const location = useLocation();
+
+
+    return (
+        <SidebarMenuItem>
+
+            <SidebarMenuButton
+                onClick={() =>
+                    item.onClick(navigate, location)
+                }
+            >
+
+                {item.icon}
+
+                <span
+                    className={
+                        item.titleColor
+                            ? colorMap[item.titleColor as keyof typeof colorMap]
+                            : undefined
+                    }
+                >
+                    {item.title}
+                </span>
+
+            </SidebarMenuButton>
+
+        </SidebarMenuItem>
+    );
 }
 
-function SidebarCollapsibleItem(item: {
-  title: string; onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void; icon?: React.ReactNode; isActive?: boolean; titleColor?: string; items?: {
-    title: string,
-    titleColor?: string,
-    onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
-  }[]
-}): import("react").JSX.Element {
 
-  const navigate = useNavigate();
 
-  const location = useLocation();
 
-  return <Collapsible
-    key={item.title}
-    defaultOpen={item.isActive}
-    className="group/collapsible"
-    render={<SidebarMenuItem />}
-  >
-    <CollapsibleTrigger
-      render={<SidebarMenuButton tooltip={item.title} />}
-    >
-      {item.icon}
-      <span>{item.title}</span>
-      <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
-    </CollapsibleTrigger>
-    <CollapsibleContent>
-      <SidebarMenuSub>
-        {item.items?.map((subItem) => (
-          <SidebarMenuSubItem key={subItem.title}>
-            <SidebarMenuSubButton onClick={() => subItem.onClick(navigate, location)}>
-              <span className={subItem.titleColor ? `text-${subItem.titleColor}` : undefined}>{subItem.title}</span>
-            </SidebarMenuSubButton>
-          </SidebarMenuSubItem>
-        ))}
-      </SidebarMenuSub>
-    </CollapsibleContent>
-  </Collapsible>
+function SidebarCollapsibleItem({
+    item,
+    role,
+}: {
+    item: NavItem;
+    role?: string;
+}) {
+
+    const navigate = useNavigate();
+    const location = useLocation();
+
+
+    const subItems =
+        item.items?.filter(
+            sub =>
+                !sub.adminOnly ||
+                role === "Admin" ||
+                role === "Owner"
+        );
+
+
+
+    return (
+
+        <Collapsible
+            defaultOpen={item.isActive}
+            className="group/collapsible"
+            render={<SidebarMenuItem />}
+        >
+
+            <CollapsibleTrigger
+                render={
+                    <SidebarMenuButton tooltip={item.title}/>
+                }
+            >
+
+                {item.icon}
+
+                <span>
+                    {item.title}
+                </span>
+
+
+                <ChevronRightIcon
+                    className="
+                        ml-auto
+                        transition-transform
+                        duration-200
+                        group-data-open/collapsible:rotate-90
+                    "
+                />
+
+            </CollapsibleTrigger>
+
+
+
+            <CollapsibleContent>
+
+                <SidebarMenuSub>
+
+                    {subItems?.map(sub => (
+
+                        <SidebarMenuSubItem
+                            key={sub.title}
+                        >
+
+                            <SidebarMenuSubButton
+                                onClick={() =>
+                                    sub.onClick(
+                                        navigate,
+                                        location
+                                    )
+                                }
+                            >
+
+                                <span
+                                    className={
+                                        sub.titleColor
+                                            ? colorMap[
+                                                sub.titleColor as keyof typeof colorMap
+                                            ]
+                                            : undefined
+                                    }
+                                >
+                                    {sub.title}
+                                </span>
+
+
+                            </SidebarMenuSubButton>
+
+                        </SidebarMenuSubItem>
+
+                    ))}
+
+                </SidebarMenuSub>
+
+            </CollapsibleContent>
+
+        </Collapsible>
+    );
 }
+
 
 
 
 export function NavMain({
-  items,
-}: {
-  items: {
-    title: string
-    onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
-    icon?: React.ReactNode
-    isActive?: boolean
-    titleColor?: string
-    items?: {
-      title: string
-      onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
-    }[]
-  }[]
-}) {
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
-      <SidebarMenu>
-        {items.map((item) =>
-          item.items ? <SidebarCollapsibleItem key={item.title} {...item} /> : <SidebarItem key={item.title} {...item} />
-        )}
-      </SidebarMenu>
-    </SidebarGroup>
-  )
+    items,
+    role,
+}: Props) {
 
-};
+
+    const filteredItems =
+        items.filter(
+            item =>
+                !item.adminOnly ||
+                role === "Admin" ||
+                role === "Owner"
+        );
+
+
+
+    return (
+
+        <SidebarGroup>
+
+            <SidebarGroupLabel>
+                Platform
+            </SidebarGroupLabel>
+
+
+            <SidebarMenu>
+
+                {
+                    filteredItems.map(item =>
+
+                        item.items
+
+                            ? (
+                                <SidebarCollapsibleItem
+                                    key={item.title}
+                                    item={item}
+                                    role={role}
+                                />
+                            )
+
+                            : (
+                                <SidebarItem
+                                    key={item.title}
+                                    item={item}
+                                />
+                            )
+                    )
+                }
+
+            </SidebarMenu>
+
+        </SidebarGroup>
+    );
+}

@@ -11,6 +11,7 @@ import fileRoutes from "./features/files/routes";
 import { cors } from "hono/cors";
 import { projectRoutes } from "./features/projects/routes";
 import { ZodError } from "zod/v3";
+import { auditRoutes } from "./features/audit/route";
 
 const app = new Hono<Env>()
     .use(
@@ -28,6 +29,7 @@ const app = new Hono<Env>()
     .route("/auth", authRoutes)
     .route("/files", fileRoutes)
     .route("/projects", projectRoutes)
+    .route("/audit", auditRoutes)
     .get("/health", (c) => {
         return c.json({
             status: "ok"

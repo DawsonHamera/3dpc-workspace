@@ -7,6 +7,7 @@ import { R2Storage } from "../../services/storage";
 import { AppError } from "../../lib/errors";
 import z from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { AuditActions, auditLogger } from "../../services/auditLog";
 
 
 function sanitizeFilename(name: string) {
@@ -37,6 +38,8 @@ const fileRoutes = new Hono<Env>()
 
             const db = c.get("db");
 
+            const audit = auditLogger(db);
+
             const storage = new R2Storage(c.env.FILES);
 
             if (!file) {
@@ -54,6 +57,13 @@ const fileRoutes = new Hono<Env>()
                 uploadedBy: user!.id
             });
 
+            await audit.create({
+                userId: user!.id,
+                action: AuditActions.FILE_UPLOADED,
+                resourceType: "file",
+                resourceId: savedFile.id,
+                description: `Uploaded file ${savedFile.originalName}`,
+            });
 
 
             return c.json(savedFile.id);
@@ -89,6 +99,8 @@ const fileRoutes = new Hono<Env>()
 
             const db = c.get("db");
 
+            const audit = auditLogger(db);
+
             const storage = new R2Storage(c.env.FILES);
 
 
@@ -108,6 +120,13 @@ const fileRoutes = new Hono<Env>()
                 editedBy: user!.id
             });
 
+            await audit.create({
+                userId: user!.id,
+                action: AuditActions.FILE_UPDATED,
+                resourceType: "file",
+                resourceId: savedFile.id,
+                description: `Updated file ${savedFile.originalName}`,
+            });
 
             return c.json(savedFile.id);
         }
@@ -194,7 +213,11 @@ const fileRoutes = new Hono<Env>()
         async (c) => {
             const { id } = c.req.param();
 
+            const user = c.get("user");
+
             const db = c.get("db");
+
+            const audit = auditLogger(db);
 
             const file = await getFileById(
                 db,
@@ -222,6 +245,14 @@ const fileRoutes = new Hono<Env>()
                 id
             );
 
+            await audit.create({
+                userId: user!.id,
+                action: AuditActions.FILE_DELETED,
+                resourceType: "file",
+                resourceId: file.id,
+                description: `Deleted file ${file.originalName}`,
+            });
+
             return c.json({
                 success: true,
             });
@@ -230,7 +261,7 @@ const fileRoutes = new Hono<Env>()
     .get(
         "/storage/usage",
         requireAuth,
-        requireRole("Admin", "Owner", "Member"),
+        requireRole("Admin", "Owner", "Member", "Guest"),
         async (c) => {
             const user = c.get("user");
 
@@ -261,16 +292,5 @@ const fileRoutes = new Hono<Env>()
             });
         }
     )
-    .get("/debug/r2", async (c) => {
-        const objects = await c.env.FILES.list();
-
-        return c.json(
-            objects.objects.map((obj) => ({
-                key: obj.key,
-                size: obj.size,
-                uploaded: obj.uploaded,
-            }))
-        );
-    })
 
 export default fileRoutes;

@@ -7,6 +7,8 @@ import { validateJson } from "../../lib/validation";
 import { requireAuth } from "../../middleware/auth";
 import { AppError } from "../../lib/errors";
 import { getUserByIdWithRoles } from "../users/service";
+import { AuditActions, auditLogger } from "../../services/auditLog";
+import { requireRole } from "../../middleware/role";
 
 const authRoutes = new Hono<Env>()
 
@@ -42,10 +44,10 @@ const authRoutes = new Hono<Env>()
             }
         });
     })
-    
+
     .post("/login", async (c) => {
         const db = c.get("db");
-
+        const audit = auditLogger(db);
         const { email, password } = await c.req.json();
 
         const userId = await verifyUser(db, email, password);
@@ -76,26 +78,34 @@ const authRoutes = new Hono<Env>()
             ].join("; ")
         );
 
+        await audit.create({
+            userId,
+            action: AuditActions.LOGIN,
+            resourceType: "user",
+            resourceId: userId,
+        });
 
         return c.json({
             success: true,
         });
     })
 
-
-    .post("/logout", async (c) => {
+    .post("/logout", requireAuth, async (c) => {
         const cookieHeader = c.req.header("Cookie");
+        const db = c.get("db");
+        const audit = auditLogger(db);
+        const userId = c.get("user")?.id;
 
         const token = cookieHeader
             ?.match(/(?:^|;\s*)session=([^;]+)/)
             ?.at(1);
 
         if (!token) {
-             throw new AppError(
-                   404,
-                   "SESSION_NOT_FOUND",
-                   "Session not found, user may already be logged out."
-                 );
+            throw new AppError(
+                404,
+                "SESSION_NOT_FOUND",
+                "Session not found, user may already be logged out."
+            );
         }
 
         if (token) {
@@ -114,6 +124,13 @@ const authRoutes = new Hono<Env>()
             ].join("; ")
         );
 
+         await audit.create({
+            userId,
+            action: AuditActions.LOGOUT,
+            resourceType: "user",
+            resourceId: userId,
+        });
+
         return c.json({
             success: true,
         });
@@ -121,8 +138,10 @@ const authRoutes = new Hono<Env>()
 
     .post("/register", validateJson(registerSchema), async (c) => {
         const db = c.get("db");
+        const audit = auditLogger(db);
 
         const data = c.req.valid("json");
+
 
         const userId = await registerUser(db, data);
 
@@ -152,6 +171,13 @@ const authRoutes = new Hono<Env>()
             ].join("; ")
         );
 
+
+        await audit.create({
+            userId,
+            action: AuditActions.USER_REGISTERED,
+            resourceType: "user",
+            resourceId: userId,
+        });
 
         return c.json({
             success: true,

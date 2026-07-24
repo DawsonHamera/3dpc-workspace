@@ -42,6 +42,32 @@ export const getProjectBySlug = async (db: Db, projectSlug: string) => {
     return filteredProject;
 }
 
+export const getProjectById = async (db: Db, projectId: string) => {
+    const project = await db.query.projects.findFirst({
+        where: (projects, { eq }) => eq(projects.id, projectId),
+        with: {
+            files: {
+                with: {
+                    file: true,
+                },
+            },
+            members: {
+                with: {
+                    user: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            avatarFileId: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    return project;
+}
+
 export const getProjectsForUser = async (db: Db, userId: string) => {
     const result = await db
         .select({
@@ -128,6 +154,7 @@ export const createProject = async (db: Db, projectData: {
     shortDescription?: string;
     visibility?: "public" | "private";
     isFeatured?: boolean;
+    createdBy: string;
 }) => {
     const newProject = await db.insert(projects).values({
         name: projectData.name,
@@ -137,6 +164,13 @@ export const createProject = async (db: Db, projectData: {
         visibility: projectData.visibility ?? "public",
         isFeatured: projectData.isFeatured ? 1 : 0,
     }).returning();
+
+    await db.insert(projectMembers).values({
+        projectId: newProject[0].id,
+        userId: projectData.createdBy,
+        role: "owner",
+    });
+
     return newProject[0];
 };
 

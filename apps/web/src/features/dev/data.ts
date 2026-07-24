@@ -139,9 +139,44 @@ export const devFeatures: DevFeature[] = [
 
 export const devLog: DevLogEntry[] = [
     {
-        title: "Added Development Tracking Page",
+        title: "New Development Updates Page",
         description:
-            "Created an internal changelog to track progress and future improvements.",
-        date: "July 2026",
+            "Added a page to track recent improvements, completed features, and upcoming changes to the club portal.",
+        date: "July 24, 2026",
+    },
+
+    {
+        title: "Improved Mobile Experience",
+        description:
+            "Added a dedicated mobile dashboard layout with mobile-friendly navigation and pages designed specifically for smaller screens.",
+        date: "July 24, 2026",
+    },
+
+    {
+        title: "Account Security Improvements",
+        description:
+            "Added password management tools and improved account settings.",
+        date: "July 24, 2026",
+    },
+
+    {
+        title: "Admin User Management",
+        description:
+            "Added tools for administrators to manage members, update roles, and maintain club accounts.",
+        date: "July 24, 2026",
+    },
+
+    {
+        title: "Audit Logging System",
+        description:
+            "Added administrative activity tracking to record important account and management changes.",
+        date: "July 24, 2026",
+    },
+
+    {
+        title: "Improved Dashboard Navigation",
+        description:
+            "Updated dashboard navigation with a cleaner structure and improved organization of projects, resources, and club management tools.",
+        date: "July 24, 2026",
     },
 ];
