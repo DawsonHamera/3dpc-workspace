@@ -22,8 +22,8 @@ export async function redirectIfAuth() {
     const user = await queryClient.ensureQueryData(authQuery);
 
     if (user) {
-        console.log("User is authenticated, redirecting to dashboard");
-        throw redirect("/dashboard");
+        console.log("User is authenticated, redirecting to portal");
+        throw redirect("/portal");
     }
     return null;
 }

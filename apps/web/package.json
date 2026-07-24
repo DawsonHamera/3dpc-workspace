@@ -9,7 +9,8 @@
     "unsafe-build": "vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "shadcn add": "dlx shadcn@latest add"
   },
   "dependencies": {
     "@3dpc/api": "workspace:*",

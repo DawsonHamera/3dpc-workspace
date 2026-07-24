@@ -2,8 +2,8 @@ import {
     createBrowserRouter,
 } from "react-router-dom";
 
-import { redirectIfAuth, requireAuth } from "./features/auth/AuthLoader";
-import DashboardLayout from "./layouts/DashboardLayout";
+import { redirectIfAuth, requireAuth } from "./features/auth/loaders/AuthLoader";
+import { DashboardLayout } from "./layouts/DashboardLayout";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import { FilePanel } from "./pages/dashboard/FilePage";
@@ -22,6 +22,13 @@ import ProfilePage from "./pages/dashboard/ProfilePage";
 import SafetyGuide from "./pages/dashboard/guides/SafetyGuide";
 import ProjectsPage from "./pages/public/ProjectsPage";
 import QnaPage from "./pages/public/QnaPage";
+import AppLayout from "./layouts/AppLayout";
+import { portalLoader } from "./features/auth/loaders/PortalLoader";
+import AppSplashPage from "./pages/app/AppSplashPage";
+import AppProjectsPage from "./pages/app/AppProjectsPage";
+import AppCalendarPage from "./pages/app/AppCalendarPage";
+import AppProfilePage from "./pages/app/AppProfilePage";
+import AppChatPage from "./pages/app/AppChatPage";
 
 export const router = createBrowserRouter([
     {
@@ -57,6 +64,10 @@ export const router = createBrowserRouter([
                         element: <QnaPage />,
                     }
                 ],
+            },
+            {
+                path: "/portal",
+                loader: portalLoader,
             },
             {
                 loader: requireAuth,
@@ -100,6 +111,37 @@ export const router = createBrowserRouter([
                         ],
                     },
                 ],
+            },
+            {
+                loader: requireAuth,
+                children: [
+                    {
+                        path: "/app",
+                        element: <AppLayout />,
+                        children: [
+                            {
+                                index: true,
+                                element: <AppSplashPage />,
+                            },
+                            {
+                                path: "projects",
+                                element: <AppProjectsPage />,
+                            },
+                            {
+                                path: "calendar",
+                                element: <AppCalendarPage />,
+                            },
+                            {
+                                path: "profile",
+                                element: <AppProfilePage />,
+                            },
+                            {
+                                path: "chat",
+                                element: <AppChatPage />,
+                            }
+                        ]
+                    }
+                ]
             },
             {
                 loader: redirectIfAuth,

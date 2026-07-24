@@ -16,6 +16,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { QuoteCarousel } from "@/features/users/components/QuoteCarousel";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileLandingPage from "./MobileLandingPage";
 
 const quotes = [
     {
@@ -35,6 +37,12 @@ const quotes = [
 ];
 
 export default function HomePage() {
+
+    const isMobile = useIsMobile();
+
+    if (isMobile) {
+        return <MobileLandingPage />;
+    }
 
     return (
         <div className="min-h-screen bg-background">

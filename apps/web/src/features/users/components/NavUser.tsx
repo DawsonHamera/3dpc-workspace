@@ -16,7 +16,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 import { useLogout } from "@/features/auth/hooks/useLogout";
 import { ChevronsUpDownIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
@@ -44,8 +43,6 @@ export function NavUser({
     avatar: string
   }
 }) {
-  const { isMobile } = useSidebar()
-
   const logout = useLogout();
   const navigate = useNavigate();
 

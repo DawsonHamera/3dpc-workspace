@@ -14,15 +14,12 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 import { MoreHorizontalIcon, FolderIcon, ArrowRightIcon, Trash2Icon } from "lucide-react"
 import { Spinner } from "../../../components/ui/spinner"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useDeleteProject } from "../useDeleteProject"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { DeleteDialog } from "@/components/custom/DeleteDialog"
 
 
@@ -43,8 +40,6 @@ export function NavProjects({ projects, isLoading }: NavProjectsProps) {
     open: false,
     projectId: "",
   });
-
-  const { isMobile } = useSidebar()
 
   const navigate = useNavigate();
 
@@ -84,8 +79,8 @@ export function NavProjects({ projects, isLoading }: NavProjectsProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-fit"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
+                side="right"
+                align="start"
               >
                 <DropdownMenuItem>
                   <FolderIcon

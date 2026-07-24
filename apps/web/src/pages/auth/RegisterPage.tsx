@@ -28,7 +28,7 @@ const RegisterPage: React.FC = () => {
     ) => {
         try {
             await registerMutation.mutateAsync(data);
-            navigate("/dashboard");
+            navigate("/portal");
         } catch (err) {
             handleMutationError(err, setError);
         }

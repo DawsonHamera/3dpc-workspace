@@ -21,7 +21,7 @@ import { useProjects } from "@/features/projects/useProjects"
 import { useMemo } from "react"
 import type { useLocation, useNavigate } from "react-router-dom"
 
-const data: {
+export const data: {
   navMain: {
     title: string
     onClick: (navigate: ReturnType<typeof useNavigate>, location: ReturnType<typeof useLocation>) => void
@@ -228,7 +228,7 @@ const data: {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function DashboardNav({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const { data: user, isLoading } = useAuth();
 

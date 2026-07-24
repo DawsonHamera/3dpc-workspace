@@ -85,7 +85,7 @@ export default function ErrorPage() {
 
                     <Button
                         variant="outline"
-                        onClick={() => navigate("/dashboard")}
+                        onClick={() => navigate("/portal")}
                     >
                         Dashboard
                     </Button>
