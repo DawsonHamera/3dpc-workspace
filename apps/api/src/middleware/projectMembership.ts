@@ -8,6 +8,7 @@ export const requireProjectMembership = (...allowedMembershipRoles: string[]) =>
         const user = c.get("user");
 
         const slug = c.req.param("projectSlug");
+        const id = c.req.param("id");
 
         if (!user) {
             throw new AppError(
@@ -17,27 +18,38 @@ export const requireProjectMembership = (...allowedMembershipRoles: string[]) =>
             );
         }
 
-        if (!slug) {
+        if (!slug && !id) {
             throw new AppError(
                 400,
                 "Bad Request",
-                "Project slug is required",
+                "Project slug or ID is required",
+            );
+        }
+
+        const projectIdentifier = slug ?? id;
+
+        if (!projectIdentifier) {
+            throw new AppError(
+                400,
+                "Bad Request",
+                "Project slug or ID is required",
             );
         }
 
         const project = await db.query.projects.findFirst({
             where: (projects, { eq }) =>
-                eq(projects.slug, slug),
+                slug
+                    ? eq(projects.slug, projectIdentifier)
+                    : eq(projects.id, projectIdentifier),
         });
 
         if (!project) {
-           throw new AppError(
+            throw new AppError(
                 404,
                 "Not Found",
                 "Project not found",
             );
         }
-
 
         const membership = await db.query.projectMembers.findFirst({
             where: (members, { eq, and }) =>
@@ -46,26 +58,34 @@ export const requireProjectMembership = (...allowedMembershipRoles: string[]) =>
                     eq(members.userId, user.id)
                 ),
         });
-        
-        if (
-            (user.role !== "Admin" && user.role !== "Owner") ||
-            !membership ||
+
+        const isGlobalAdmin =
+            user.role === "Admin" ||
+            user.role === "Owner";
+
+        const hasMembershipAccess =
+            !!membership &&
             (
-                allowedMembershipRoles.length > 0 &&
-                !allowedMembershipRoles.includes(membership.role)
-            )
+                allowedMembershipRoles.length === 0 ||
+                allowedMembershipRoles.includes(membership.role)
+            );
+
+        const canAccessPrivateProject =
+            isGlobalAdmin || hasMembershipAccess;
+
+        if (
+            project.visibility === "private" &&
+            !canAccessPrivateProject
         ) {
-           throw new AppError(
+            throw new AppError(
                 403,
                 "Forbidden",
                 "You do not have permission to access this project",
             );
         }
 
-        // Make available to all following handlers
-        c.set("projectMembership", membership.role);
-
+        c.set("projectMembership", membership?.role || "");
 
         await next();
     });
-}
+};

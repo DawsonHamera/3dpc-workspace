@@ -19,3 +19,7 @@ export function useProjects() {
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
 }
+
+export type Project = NonNullable<
+  NonNullable<ReturnType<typeof useProjects>["data"]>[0]
+>;

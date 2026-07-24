@@ -2,6 +2,6 @@ export type ApiError = {
     error: {
         code: string;
         message: string;
-        details?: unknown;
+        details?: { path: (string | number)[]; message: string; }[];
     };
 };

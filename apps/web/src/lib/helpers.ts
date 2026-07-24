@@ -20,3 +20,9 @@ export function formatDate(date: string | Date): string {
         minute: "2-digit",
     }).format(new Date(date));
 }
+
+export function getFileUrl(path?: string | null) {
+    if (!path) return "";
+
+    return `${import.meta.env.VITE_API_URL}/files/${path}/download`;
+}

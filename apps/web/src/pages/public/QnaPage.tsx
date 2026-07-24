@@ -1,0 +1,146 @@
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MessagesSquare } from "lucide-react";
+
+
+const qnaCategories = [
+    {
+        category: "Getting Started",
+        description: "New to the club? Start here.",
+        questions: [
+            {
+                question: "What is the club about?",
+                answer:
+                    "Our club explores design, engineering, and fabrication through hands-on projects using 3D printers, CAD software, and other maker tools.",
+            },
+            {
+                question: "Do I need experience to join?",
+                answer:
+                    "No. Members of all skill levels are welcome. We help beginners learn CAD, printing basics, and how to turn ideas into physical objects.",
+            },
+        ],
+    },
+    {
+        category: "3D Printing",
+        description: "Learn the basics of additive manufacturing.",
+        questions: [
+            {
+                question: "What is 3D printing?",
+                answer:
+                    "3D printing creates physical objects from digital designs by building them layer by layer. Our club primarily works with FDM printers using plastic filament.",
+            },
+            {
+                question: "What can I print?",
+                answer:
+                    "Members create prototypes, functional parts, artistic designs, models, and custom projects. If you can design it, we can usually help make it.",
+            },
+        ],
+    },
+    {
+        category: "Materials",
+        description: "Understanding different printing materials.",
+        questions: [
+            {
+                question: "What materials do we use?",
+                answer:
+                    "We commonly use PLA and PETG because they are reliable, easy to print, and suitable for most projects.",
+            },
+            {
+                question: "Why does material choice matter?",
+                answer:
+                    "Different materials have different strengths, flexibility, durability, and temperature resistance. Choosing the right material helps your project succeed.",
+            },
+        ],
+    },
+    {
+        category: "Projects",
+        description: "Creating and sharing your ideas.",
+        questions: [
+            {
+                question: "Can I bring my own project idea?",
+                answer:
+                    "Yes! Members are encouraged to propose ideas, collaborate with others, and use the club resources to bring projects to life.",
+            },
+            {
+                question: "How do projects get started?",
+                answer:
+                    "Projects usually begin with an idea or design, followed by planning, prototyping, testing, and improving the final result.",
+            },
+        ],
+    },
+    {
+        category: "Safety",
+        description: "Using equipment responsibly.",
+        questions: [
+            {
+                question: "Are 3D printers safe?",
+                answer:
+                    "Yes, when operated correctly. Members learn proper equipment usage, workspace expectations, and safety procedures.",
+            },
+        ],
+    },
+];
+
+
+
+export default function QnaPage() {
+    return (
+        <div className="container mx-auto px-6 py-12">
+            <div className="mb-10 space-y-3">
+                <div className="flex items-center gap-3">
+                    <MessagesSquare className="h-10 w-10" />
+
+                    <h1 className="text-4xl font-bold tracking-tight">
+                        Q&A
+                    </h1>
+                </div>
+                <p className="max-w-2xl text-muted-foreground">
+                    Find answers about our club, 3D printing, projects,
+                    and getting started.
+                </p>
+            </div>
+
+            <div className="space-y-6">
+                {qnaCategories.map((category) => (
+                    <Card key={category.category}>
+                        <CardHeader>
+                            <CardTitle>
+                                {category.category}
+                            </CardTitle>
+
+                            <p className="text-sm text-muted-foreground">
+                                {category.description}
+                            </p>
+                        </CardHeader>
+
+                        <CardContent>
+                            <Accordion
+                                className="w-full"
+                            >
+                                {category.questions.map((item, index) => (
+                                    <AccordionItem
+                                        key={index}
+                                        value={`${category.category}-${index}`}
+                                    >
+                                        <AccordionTrigger>
+                                            {item.question}
+                                        </AccordionTrigger>
+
+                                        <AccordionContent className="bg-muted rounded-md p-4 text-sm text-muted-foreground">
+                                            {item.answer}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}

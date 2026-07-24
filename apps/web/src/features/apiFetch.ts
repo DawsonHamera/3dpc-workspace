@@ -1,4 +1,5 @@
 import type { ApiError } from "./types";
+
 export async function apiFetch<T>(
     res: {
         ok: boolean;
@@ -12,13 +13,10 @@ export async function apiFetch<T>(
     return await res.json();
 }
 
-export function isApiError(error: unknown): error is ApiError {
+export function isApiError(err: unknown): err is ApiError {
     return (
-        typeof error === "object" &&
-        error !== null &&
-        "error" in error &&
-        typeof (error as ApiError).error === "object" &&
-        typeof (error as ApiError).error.message === "string" &&
-        typeof (error as ApiError).error.code === "string"
+        typeof err === "object" &&
+        err !== null &&
+        "error" in err
     );
 }

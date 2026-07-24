@@ -42,7 +42,7 @@ const fileRoutes = new Hono<Env>()
             if (!file) {
                 throw new AppError(
                     400,
-                    "Bad Request",
+                    "BAD_REQUEST",
                     "No file provided",
                 );
             }
@@ -95,7 +95,7 @@ const fileRoutes = new Hono<Env>()
             if (!file) {
                 throw new AppError(
                     400,
-                    "Bad Request",
+                    "BAD_REQUEST",
                     "No file provided",
                 );
             }

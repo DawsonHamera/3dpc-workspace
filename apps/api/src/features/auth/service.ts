@@ -94,13 +94,11 @@ export const registerUser = async (
   });
 
   if (existingUser) {
-    if (existingUser) {
       throw new AppError(
         409,
         "EMAIL_EXISTS",
         "Email is already registered"
       );
-    }
   }
 
   const passwordHash = await hashToken(data.password);

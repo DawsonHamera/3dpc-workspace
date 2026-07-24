@@ -4,6 +4,7 @@ import {
 } from "@tanstack/react-query";
 
 import { api } from "../../../api/client";
+import { apiFetch } from "@/features/apiFetch";
 
 
 export function useRegister() {
@@ -17,6 +18,7 @@ export function useRegister() {
             email: string;
             name: string;
             password: string;
+            confirmPassword: string;
             grade?: string;
         }) => {
 
@@ -25,24 +27,7 @@ export function useRegister() {
                 json: data,
             });
 
-
-            if (!res.ok) {
-
-                const error =
-                    await res.json()
-                        .catch(() => null);
-
-
-                throw new Error(
-                    error?.error.message ??
-                    "Registration failed"
-                );
-
-            }
-
-
-            return res.json();
-
+            return apiFetch(res);
         },
 
 
@@ -59,3 +44,11 @@ export function useRegister() {
 
     });
 }
+
+export type RegisterData = {
+    email: string;
+    name: string;
+    password: string;
+    confirmPassword: string;
+    grade?: string;
+};

@@ -41,6 +41,7 @@ const app = new Hono<Env>()
                 error: {
                     code: err.code,
                     message: err.message,
+                    details: err.details,
                 },
             },
             err.status

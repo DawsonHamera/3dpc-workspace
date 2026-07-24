@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../api/client";
 import { useRevalidator } from "react-router-dom";
+import { apiFetch } from "@/features/apiFetch";
 
 export function useLogin() {
   const queryClient = useQueryClient();
 
-  const revalidator = useRevalidator(); 
+  const revalidator = useRevalidator();
 
   return useMutation({
     mutationFn: async (data: {
@@ -16,11 +17,8 @@ export function useLogin() {
         json: data,
       });
 
-      if (!res.ok) {
-        throw new Error("Login failed");
-      }
+      return apiFetch(res);
 
-      return res.json();
     },
 
     onSuccess: async () => {
@@ -31,3 +29,8 @@ export function useLogin() {
     },
   });
 }
+
+export type LoginData = {
+  email: string;
+  password: string;
+};

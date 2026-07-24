@@ -2,18 +2,29 @@ import { Hono } from "hono";
 import { requireAuth } from "../../middleware/auth";
 import { Env } from "../../types";
 import { requireRole } from "../../middleware/role";
-import { checkForDuplicateFileInSameProject, confirmUserProjectMembership, getProjectBySlug, getProjectsForUser, saveProjectFile } from "./service";
+import { checkForDuplicateFileInSameProject, confirmUserProjectMembership, createProject, deleteProject, getProjectBySlug, getProjectsForUser, getPublicProjects, saveProjectFile } from "./service";
 import { R2Storage } from "../../services/storage";
 import { handleFileUpload } from "../files/service";
 import { requireProjectMembership } from "../../middleware/projectMembership";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { AppError } from "../../lib/errors";
+import { validateJson } from "../../lib/validation";
 
 const uploadSchema = z.object({
     file: z.instanceof(File),
     metadata: z.string().optional(),
 })
+
+
+const createProjectSchema = z.object({
+    name: z.string().min(1, "Project name is required"),
+    description: z.string().optional(),
+    shortDescription: z.string().optional(),
+    visibility: z.enum(["public", "private"]).optional(),
+    isFeatured: z.boolean().optional(),
+    slug: z.string().min(1, "Project slug is required"),
+});
 
 export const projectRoutes = new Hono<Env>()
 
@@ -37,6 +48,20 @@ export const projectRoutes = new Hono<Env>()
 
             console.log("Fetching projects for user:", user.id);
             const projects = await getProjectsForUser(db, user.id);
+
+            return c.json(
+                projects,
+                200
+            );
+        }
+    )
+
+    .get(
+        "/public",
+        async (c) => {
+            const db = c.get("db");
+
+            const projects = await getPublicProjects(db);
 
             return c.json(
                 projects,
@@ -128,6 +153,39 @@ export const projectRoutes = new Hono<Env>()
         }
     )
 
+    .post(
+        "/",
+        requireAuth,
+        requireRole("Admin", "Owner", "Member"),
+        validateJson(createProjectSchema),
+        async (c) => {
+            const db = c.get("db");
+            const user = c.get("user");
+
+            if (!user) {
+                throw new AppError(
+                    400,
+                    "Bad Request",
+                    "User not found",
+                );
+            }
+
+            const body = await c.req.json();
+
+            const project = await createProject(db, {
+                ...body,
+                createdBy: user.id,
+            });
+
+            return c.json(
+                {
+                    ...project,
+                },
+                201
+            );
+        }
+    )
+
 
     .get(
         "/:projectSlug",
@@ -158,6 +216,28 @@ export const projectRoutes = new Hono<Env>()
                         joinedAt: pm.joinedAt,
                         user: pm.user,
                     })),
+                },
+                200
+            )
+        }
+    )
+
+
+    .delete(
+        "/:id",
+        requireAuth,
+        requireRole("Admin", "Owner", "Member"),
+        requireProjectMembership("Owner", "lead"),
+        async (c) => {
+            const { id } = c.req.param();
+
+            const db = c.get("db");
+
+            await deleteProject(db, id);
+
+            return c.json(
+                {
+                    message: "Project deleted successfully",
                 },
                 200
             );

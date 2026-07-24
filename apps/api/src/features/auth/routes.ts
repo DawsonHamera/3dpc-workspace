@@ -14,9 +14,11 @@ const authRoutes = new Hono<Env>()
         const userId = c.get("user")?.id;
 
         if (!userId) {
-            return c.json({
-                user: null
-            });
+            throw new AppError(
+                404,
+                "USER_NOT_FOUND",
+                "User not found."
+            );
         }
 
         const db = c.get("db");
@@ -24,9 +26,11 @@ const authRoutes = new Hono<Env>()
         const user = await getUserByIdWithRoles(db, userId);
 
         if (!user) {
-            return c.json({
-                user: null
-            });
+            throw new AppError(
+                404,
+                "USER_NOT_FOUND",
+                "User not found."
+            );
         }
 
         return c.json({
@@ -47,11 +51,10 @@ const authRoutes = new Hono<Env>()
         const userId = await verifyUser(db, email, password);
 
         if (!userId) {
-            return c.json(
-                {
-                    error: "Invalid credentials",
-                },
-                401
+            throw new AppError(
+                401,
+                "INVALID_CREDENTIALS",
+                "Invalid email or password."
             );
         }
 
@@ -124,11 +127,10 @@ const authRoutes = new Hono<Env>()
         const userId = await registerUser(db, data);
 
         if (!userId) {
-            return c.json(
-                {
-                    error: "Failed to register user. User may already exist or input is invalid.",
-                },
-                400
+            throw new AppError(
+                400,
+                "REGISTRATION_FAILED",
+                "User registration failed."
             );
         }
 

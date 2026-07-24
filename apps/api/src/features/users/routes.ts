@@ -5,6 +5,7 @@ import { requireRole } from "../../middleware/role";
 import { requireAuth } from "../../middleware/auth";
 import { handleFileRemoval, handleFileUpload, saveFile } from "../files/service";
 import { R2Storage } from "../../services/storage";
+import { AppError } from "../../lib/errors";
 
 function sanitizeFilename(name: string) {
     return name
@@ -57,26 +58,29 @@ const usersRoutes = new Hono<Env>()
             const storage = new R2Storage(c.env.FILES);
 
             if (!user) {
-                return c.json(
-                    { error: "Unauthorized" },
-                    401
+                throw new AppError(
+                    401,
+                    "UNAUTHORIZED",
+                    "Unauthorized"
                 );
             }
 
             if (!file) {
-                return c.json(
-                    { error: "No file provided" },
-                    400
-                );
+                throw new AppError(
+                    400,
+                    "BAD_REQUEST",
+                    "No file provided"
+                )
             }
             console.log("Uploading avatar for user:", user.id);
 
             const userData = await getUserByIdWithRoles(db, user.id);
 
             if (!userData) {
-                return c.json(
-                    { error: "User not found" },
-                    404
+                throw new AppError(
+                    404,
+                    "USER_NOT_FOUND",
+                    "User not found"
                 );
             }
 

@@ -15,6 +15,10 @@ export function useProjectBySlug(projectSlug: string) {
             return apiFetch(res);
         },
 
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 5,
     });
 }
+
+export type ProjectMember = NonNullable<
+  NonNullable<ReturnType<typeof useProjectBySlug>["data"]>["members"][0]
+>;

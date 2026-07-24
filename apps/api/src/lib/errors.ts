@@ -4,7 +4,8 @@ export class AppError extends Error {
   constructor(
     public status: ContentfulStatusCode,
     public code: string,
-    message: string
+    message: string,
+    public details?: unknown
   ) {
     super(message);
   }

@@ -1,62 +1,119 @@
 import {
     createBrowserRouter,
-    Navigate,
 } from "react-router-dom";
 
-import { redirectIfAuth, requireAuth } from "./components/auth/AuthLoader";
-import Dashboard from "./pages/dashboard/Dashboard";
-import LoginPage from "./pages/login/LoginPage";
-import RegisterPage from "./pages/login/RegisterPage";
-import AccountPanel from "./pages/dashboard/AccountPanel";
-import { ProjectPanel } from "./pages/dashboard/ProjectPanel";
-import { FilePanel } from "./pages/dashboard/FilePanel";
-import ErrorPage from "./pages/dashboard/ErrorPage";
-import SplashPanel from "./pages/dashboard/SplashPanel";
+import { redirectIfAuth, requireAuth } from "./features/auth/AuthLoader";
+import DashboardLayout from "./layouts/DashboardLayout";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+import { FilePanel } from "./pages/dashboard/FilePage";
+import ErrorPage from "./pages/ErrorPage";
+import LandingPage from "./pages/public/LandingPage-Club";
+import CalendarPage from "./pages/public/CalendarPage";
+import { PublicLayout } from "./layouts/PublicLayout";
+import ContactPage from "./pages/public/ContactPage";
+import GalleryPage from "./pages/public/GalleryPage";
+import { AccountPage } from "./pages/dashboard/AccountPage";
+import { ProjectPage } from "./pages/dashboard/ProjectPage";
+import SplashPage from "./pages/dashboard/SplashPage";
+import PrinterGuide from "./pages/dashboard/guides/PrinterGuide";
+import MaterialGuide from "./pages/dashboard/guides/MaterialGuide";
+import ProfilePage from "./pages/dashboard/ProfilePage";
+import SafetyGuide from "./pages/dashboard/guides/SafetyGuide";
+import ProjectsPage from "./pages/public/ProjectsPage";
+import QnaPage from "./pages/public/QnaPage";
 
 export const router = createBrowserRouter([
     {
-        loader: requireAuth,
+        path: "/",
         errorElement: <ErrorPage />,
         children: [
             {
-                path: "/dashboard",
-                element: <Dashboard />,
+                path: "/",
+                element: <PublicLayout />,
                 children: [
                     {
                         index: true,
-                        element: <SplashPanel />,
+                        element: <LandingPage />,
                     },
                     {
-                        path: "account",
-                        element: <AccountPanel />,
+                        path: "/calendar",
+                        element: <CalendarPage />,
                     },
                     {
-                        path: "projects/:slug/files/:fileId/:mode",
-                        element: <FilePanel />,
+                        path: "/contact",
+                        element: <ContactPage />,
                     },
                     {
-                        path: "projects/:slug",
-                        element: <ProjectPanel />,
+                        path: "/gallery",
+                        element: <GalleryPage />,
+                    },
+                    {
+                        path: "/projects",
+                        element: <ProjectsPage />,
+                    },
+                    {
+                        path: "/qa",
+                        element: <QnaPage />,
+                    }
+                ],
+            },
+            {
+                loader: requireAuth,
+                children: [
+                    {
+                        path: "/dashboard",
+                        element: <DashboardLayout />,
+                        children: [
+                            {
+                                index: true,
+                                element: <SplashPage />,
+                            },
+                            {
+                                path: "account",
+                                element: <AccountPage />,
+                            },
+                            {
+                                path: "profile",
+                                element: <ProfilePage />,
+                            },
+                            {
+                                path: "projects/:slug/files/:fileId/:mode",
+                                element: <FilePanel />,
+                            },
+                            {
+                                path: "projects/:slug",
+                                element: <ProjectPage />,
+                            },
+                            {
+                                path: "guides/printer-guide",
+                                element: <PrinterGuide />,
+                            },
+                            {
+                                path: "guides/material-guide",
+                                element: <MaterialGuide />,
+                            },
+                            {
+                                path: "guides/safety-guide",
+                                element: <SafetyGuide />,
+                            }
+                        ],
                     },
                 ],
             },
-        ],
-    },
-    {
-        path: "/",
-        element: <Navigate to="/dashboard" replace />,
-    },
-    {
-        loader: redirectIfAuth,
-        children: [
             {
-                path: "/login",
-                element: <LoginPage />,
+                loader: redirectIfAuth,
+                children: [
+                    {
+                        path: "/login",
+                        element: <LoginPage />,
+                    },
+                    {
+                        path: "/register",
+                        element: <RegisterPage />,
+                    },
+                ],
             },
-            {
-                path: "/register",
-                element: <RegisterPage />,
-            },
-        ],
-    },
+        ]
+    }
 ]);

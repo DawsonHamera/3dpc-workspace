@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../../api/client";
 import { useRevalidator } from "react-router-dom";
+import { apiFetch } from "@/features/apiFetch";
 
 export function useLogout() {
   const queryClient = useQueryClient();
@@ -12,11 +13,7 @@ export function useLogout() {
     mutationFn: async () => {
       const res = await api.auth.logout.$post();
 
-      if (!res.ok) {
-        throw new Error("Logout failed");
-      }
-
-      return res.json();
+      return apiFetch(res);
     },
 
     onSuccess: async () => {
