@@ -1,26 +1,13 @@
 import { Hono } from "hono";
-import { Env } from "../../types";
-import { deleteFile, getFileById, getStorageUsage, handleFileUpdate, handleFileUpload, saveFile } from "./service";
 import { requireAuth } from "../../middleware/auth";
 import { requireRole } from "../../middleware/role";
-import { R2Storage } from "../../services/storage";
 import { AppError } from "../../lib/errors";
-import z from "zod";
-import { zValidator } from "@hono/zod-validator";
+import { R2Storage } from "../../services/storage";
 import { AuditActions, auditLogger } from "../../services/auditLog";
-
-
-function sanitizeFilename(name: string) {
-    return name
-        .replace(/[^a-zA-Z0-9._-]/g, "_")
-        .slice(0, 100);
-}
-
-const uploadSchema = z.object({
-    file: z.instanceof(File),
-    metadata: z.string().optional(),
-})
-
+import { findFileById } from "./repository";
+import { downloadFile, removeFile, updateFile, uploadFile } from "./service";
+import { Env } from "../../types";
+import { requireUser } from "../../lib/auth";
 
 const fileRoutes = new Hono<Env>()
 
@@ -32,33 +19,27 @@ const fileRoutes = new Hono<Env>()
 
             const body = await c.req.parseBody();
 
-            const user = c.get("user");
-
             const file = body.file;
 
-            const db = c.get("db");
+            const user = requireUser(c);
 
-            const audit = auditLogger(db);
-
-            const storage = new R2Storage(c.env.FILES);
-
-            if (!file) {
+            if (!(file instanceof File)) {
                 throw new AppError(
                     400,
                     "BAD_REQUEST",
-                    "No file provided",
+                    "No file provided"
                 );
             }
 
-            const savedFile = await handleFileUpload({
-                db,
-                storage,
+            const savedFile = await uploadFile({
+                services: c.get("services"),
                 file,
-                uploadedBy: user!.id
+                uploadedBy: user.id,
             });
 
-            await audit.create({
-                userId: user!.id,
+
+            await auditLogger(c.get("db")).create({
+                userId: user.id,
                 action: AuditActions.FILE_UPLOADED,
                 resourceType: "file",
                 resourceId: savedFile.id,
@@ -66,7 +47,9 @@ const fileRoutes = new Hono<Env>()
             });
 
 
-            return c.json(savedFile.id);
+            return c.json({
+                id: savedFile.id,
+            }, 201);
         }
     )
 
@@ -74,131 +57,91 @@ const fileRoutes = new Hono<Env>()
         "/:id",
         requireAuth,
         requireRole("Admin", "Owner", "Member"),
-        zValidator(
-            "form",
-            uploadSchema,
-            (result, c) => {
-                if (!result.success) {
-                    throw new AppError(
-                        400,
-                        "VALIDATION_ERROR",
-                        "Invalid upload data"
-                    );
-                }
-            }
-        ),
-
         async (c) => {
+            const body = await c.req.parseBody();
 
+            const file = body.file;
 
-            const user = c.get("user");
+            const user = requireUser(c);
 
-            const fileId = c.req.param("id");
-
-            const { file } = c.req.valid("form");
-
-            const db = c.get("db");
-
-            const audit = auditLogger(db);
-
-            const storage = new R2Storage(c.env.FILES);
-
-
-            if (!file) {
+            if (!(file instanceof File)) {
                 throw new AppError(
                     400,
                     "BAD_REQUEST",
-                    "No file provided",
+                    "No file provided"
                 );
             }
 
-            const savedFile = await handleFileUpdate({
-                db,
-                storage,
-                fileId,
+            const savedFile = await updateFile({
+                services: c.get("services"),
                 file,
-                editedBy: user!.id
+                userId: user.id,
+                id: c.req.param("id"),
             });
 
-            await audit.create({
-                userId: user!.id,
-                action: AuditActions.FILE_UPDATED,
-                resourceType: "file",
-                resourceId: savedFile.id,
-                description: `Updated file ${savedFile.originalName}`,
-            });
 
-            return c.json(savedFile.id);
+            return c.json({
+                id: savedFile.id,
+            }, 201);
         }
     )
+
 
     .get(
         "/:id/download",
         requireAuth,
-        requireRole("Admin", "Owner", "Member", "Guest"),
+        requireRole(
+            "Admin",
+            "Owner",
+            "Member",
+            "Guest"
+        ),
         async (c) => {
 
-            console.log(
-                "DOWNLOAD REQUEST",
-                c.req.url,
-                c.req.header("host")
-            );
+            const { object, file } = await downloadFile({
+                services: c.get("services"),
+                id: c.req.param("id"),
+            });
 
-            const { id } = c.req.param();
-            const db = c.get("db");
-
-            const file = await getFileById(db, id);
-
-            if (!file) {
-                throw new AppError(
-                    404,
-                    "FILE_NOT_FOUND",
-                    "File not found."
-                );
-            }
-
-            const storage = new R2Storage(c.env.FILES);
-
-            const object = await storage.get(file.key);
-
-            if (!object) {
-                throw new AppError(
-                    404,
-                    "STORED_FILE_MISSING",
-                    "Stored file missing"
-                );
-            }
 
             return new Response(
                 object.body,
                 {
                     headers: {
-                        "Content-Type": object.httpMetadata?.contentType
-                            ?? "application/octet-stream",
+                        "Content-Type":
+                            file.mimeType ??
+                            "application/octet-stream",
 
-                        "Content-Length": object.size.toString(),
+                        "Content-Length":
+                            file.size.toString(),
 
-                          "Cache-Control": "no-store",
+                        "Content-Disposition":
+                            `attachment; filename="${file.originalName}"`,
+
+                        "Cache-Control":
+                            "no-store",
                     },
                 }
             );
-        })
+        }
+    )
+
 
     .get(
         "/:id",
         requireAuth,
-        requireRole("Admin", "Owner", "Member", "Guest"),
         async (c) => {
-            const { id } = c.req.param();
-            const db = c.get("db");
 
-            const file = await getFileById(db, id);
+            const file = await findFileById(
+                c.get("db"),
+                c.req.param("id")
+            );
 
             if (!file) {
                 throw new AppError(
                     404,
                     "FILE_NOT_FOUND",
-                    "File not found."
+                    "File not found"
                 );
             }
 
@@ -206,91 +149,27 @@ const fileRoutes = new Hono<Env>()
         }
     )
 
+
     .delete(
         "/:id",
         requireAuth,
         requireRole("Admin", "Owner", "Member"),
         async (c) => {
-            const { id } = c.req.param();
 
-            const user = c.get("user");
+            const user = requireUser(c);
 
-            const db = c.get("db");
-
-            const audit = auditLogger(db);
-
-            const file = await getFileById(
-                db,
-                id
-            );
-
-            if (!file) {
-                throw new AppError(
-                    404,
-                    "FILE_NOT_FOUND",
-                    "File not found."
-                );
-            }
-
-            const storage = new R2Storage(
-                c.env.FILES
-            );
-
-            await storage.delete(
-                file.key
-            );
-
-            await deleteFile(
-                db,
-                id
-            );
-
-            await audit.create({
-                userId: user!.id,
-                action: AuditActions.FILE_DELETED,
-                resourceType: "file",
-                resourceId: file.id,
-                description: `Deleted file ${file.originalName}`,
+            await removeFile({
+                services: c.get("services"), 
+                userId: user.id,
+                id: c.req.param("id")
             });
+
 
             return c.json({
-                success: true,
+                success: true
             });
         }
-    )
-    .get(
-        "/storage/usage",
-        requireAuth,
-        requireRole("Admin", "Owner", "Member", "Guest"),
-        async (c) => {
-            const user = c.get("user");
+    );
 
-            if (!user) {
-                throw new AppError(
-                    401,
-                    "UNAUTHORIZED",
-                    "Unauthorized"
-                );
-            }
-
-            const db = c.get("db");
-
-            const used = await getStorageUsage(
-                db,
-                user.id
-            );
-
-            const limit = 5 * 1024 * 1024 * 1024; // 5GB
-
-            return c.json({
-                used,
-                limit,
-                remaining: Math.max(limit - used, 0),
-                percentage: Math.round(
-                    (used / limit) * 100
-                ),
-            });
-        }
-    )
 
 export default fileRoutes;

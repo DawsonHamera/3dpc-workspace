@@ -15,7 +15,6 @@ export const projectUpdates = pgTable("project_updates", {
     }),
 
   authorId: uuid("author_id")
-    .notNull()
     .references(() => users.id, {
       onDelete: "set null",
     }),

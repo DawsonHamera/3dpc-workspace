@@ -12,6 +12,7 @@ import { cors } from "hono/cors";
 import { projectRoutes } from "./features/projects/routes";
 import { ZodError } from "zod/v3";
 import { auditRoutes } from "./features/audit/route";
+import { serviceContext } from "./middleware/services";
 
 const app = new Hono<Env>()
     .use(
@@ -25,6 +26,7 @@ const app = new Hono<Env>()
         })
     )
     .use("*", dbMiddleware)
+    .use("*", serviceContext)
     .route("/users", userRoutes)
     .route("/auth", authRoutes)
     .route("/files", fileRoutes)

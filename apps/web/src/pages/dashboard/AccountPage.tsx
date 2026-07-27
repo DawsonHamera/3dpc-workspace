@@ -36,6 +36,8 @@ import {
     Bell,
     Trash2,
     Image,
+    Moon,
+    Sun,
 } from "lucide-react";
 
 import { useUpdateAvatar } from "@/features/users/hooks/useUpdateAvatar";
@@ -49,6 +51,7 @@ import {
 import { handleMutationError } from "@/lib/forms/handleMutationError";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useDeleteUser } from "@/features/users/hooks/useDeleteUser";
+import { useTheme } from "@/providers/ThemeProvider";
 
 
 
@@ -66,6 +69,9 @@ export const AccountPage = () => {
     const deleteUser = useDeleteUser();
 
     const { data: user } = useAuth();
+
+    const { theme, toggleTheme } = useTheme();
+    
 
 
     const handleAvatarChange = (
@@ -135,7 +141,7 @@ export const AccountPage = () => {
             await deleteUser.mutateAsync(user.id);
         } catch (err) {
             console.error("Failed to delete account:", err);
-        } 
+        }
     }
 
 
@@ -389,8 +395,6 @@ export const AccountPage = () => {
 
 
 
-
-
                 <Card>
 
                     <CardHeader>
@@ -399,16 +403,49 @@ export const AccountPage = () => {
                             Preferences
                         </CardTitle>
 
-
                         <CardDescription>
                             Customize your experience.
                         </CardDescription>
 
                     </CardHeader>
 
+                    <CardContent className="flex flex-col gap-3">
 
+                        <Item>
 
-                    <CardContent>
+                            <ItemMedia variant="icon">
+                                {theme === "dark" ? <Moon /> : <Sun />}
+                            </ItemMedia>
+
+                            <ItemContent>
+
+                                <ItemTitle>
+                                    Theme
+                                </ItemTitle>
+
+                                <ItemDescription>
+                                    Currently using{" "}
+                                    <span className="font-medium capitalize">
+                                        {theme}
+                                    </span>{" "}
+                                    mode.
+                                </ItemDescription>
+
+                            </ItemContent>
+
+                            <ItemActions>
+
+                                <Button
+                                    variant="outline"
+                                    onClick={toggleTheme}
+                                >
+                                    Switch to{" "}
+                                    {theme === "dark" ? "Light" : "Dark"} Mode
+                                </Button>
+
+                            </ItemActions>
+
+                        </Item>
 
                         <Item>
 
@@ -416,13 +453,11 @@ export const AccountPage = () => {
                                 <Bell />
                             </ItemMedia>
 
-
                             <ItemContent>
 
                                 <ItemTitle>
                                     Notifications
                                 </ItemTitle>
-
 
                                 <ItemDescription>
                                     Manage email and project notifications.
@@ -430,26 +465,22 @@ export const AccountPage = () => {
 
                             </ItemContent>
 
-
-
                             <ItemActions>
 
-                                <Button variant="outline" disabled>
+                                <Button
+                                    variant="outline"
+                                    disabled
+                                >
                                     Manage
                                 </Button>
 
                             </ItemActions>
 
-
                         </Item>
-
 
                     </CardContent>
 
                 </Card>
-
-
-
 
 
 

@@ -1,281 +1,318 @@
 import { Hono } from "hono";
-import { requireAuth } from "../../middleware/auth";
-import { Env } from "../../types";
-import { requireRole } from "../../middleware/role";
-import { checkForDuplicateFileInSameProject, confirmUserProjectMembership, createProject, deleteProject, getProjectById, getProjectBySlug, getProjectsForUser, getPublicProjects, saveProjectFile } from "./service";
-import { R2Storage } from "../../services/storage";
-import { handleFileUpload } from "../files/service";
-import { requireProjectMembership } from "../../middleware/projectMembership";
-import { z } from "zod";
-import { zValidator } from "@hono/zod-validator";
-import { AppError } from "../../lib/errors";
-import { validateJson } from "../../lib/validation";
-import { AuditActions, auditLogger } from "../../services/auditLog";
 
-const uploadSchema = z.object({
-    file: z.instanceof(File),
-    metadata: z.string().optional(),
-})
+import {
+    requireAuth,
+} from "../../middleware/auth";
+
+import {
+    requireRole,
+} from "../../middleware/role";
+
+import {
+    requireProjectMembership,
+} from "../../middleware/projectMembership";
+
+import {
+    validateJson,
+} from "../../lib/validation";
+
+import {
+    zValidator,
+} from "@hono/zod-validator";
+
+import {
+    AppError,
+} from "../../lib/errors";
+
+import {
+    R2Storage,
+} from "../../services/storage";
+
+import {
+    getProjectsForUser,
+    getPublicProjects,
+    getProjectBySlug,
+    createProject,
+    uploadProjectFile,
+    deleteProject,
+} from "./service";
+
+import {
+    createProjectSchema,
+    uploadSchema,
+} from "./schema";
+
+import type {
+    Env,
+} from "../../types";
 
 
-const createProjectSchema = z.object({
-    name: z.string().min(1, "Project name is required"),
-    description: z.string().optional(),
-    shortDescription: z.string().optional(),
-    visibility: z.enum(["public", "private"]).optional(),
-    isFeatured: z.boolean().optional(),
-    slug: z.string().min(1, "Project slug is required"),
-});
 
 export const projectRoutes = new Hono<Env>()
 
-    .get(
-        "/",
-        requireAuth,
-        requireRole("Admin", "Owner", "Member"),
-        async (c) => {
-            console.log("Fetching projects for user");
-            const db = c.get("db");
-            const user = c.get("user");
-
-            if (!user) {
-                throw new AppError(
-                    400,
-                    "Bad Request",
-                    "User not found",
-                );
-            }
 
 
-            console.log("Fetching projects for user:", user.id);
-            const projects = await getProjectsForUser(db, user.id);
+.get(
+    "/",
+    requireAuth,
+    requireRole(
+        "Admin",
+        "Owner",
+        "Member"
+    ),
 
-            return c.json(
-                projects,
-                200
+    async (c) => {
+
+        const user =
+            c.get("user");
+
+
+        if (!user) {
+            throw new AppError(
+                400,
+                "BAD_REQUEST",
+                "User not found"
             );
         }
-    )
 
-    .get(
-        "/public",
-        async (c) => {
-            const db = c.get("db");
 
-            const projects = await getPublicProjects(db);
+        const projects =
+            await getProjectsForUser(
+                c.get("db"),
+                user.id
+            );
 
-            return c.json(
-                projects,
-                200
+
+        return c.json(
+            projects
+        );
+    }
+)
+
+
+
+.get(
+    "/public",
+
+    async (c) => {
+
+        const projects =
+            await getPublicProjects(
+                c.get("db")
+            );
+
+
+        return c.json(
+            projects
+        );
+    }
+)
+
+
+
+.get(
+    "/:projectSlug",
+
+    requireAuth,
+
+    requireRole(
+        "Admin",
+        "Owner",
+        "Member"
+    ),
+
+    requireProjectMembership(),
+
+    async (c) => {
+
+        const project =
+            await getProjectBySlug(
+                c.get("db"),
+                c.req.param(
+                    "projectSlug"
+                )
+            );
+
+
+        if (!project) {
+            throw new AppError(
+                404,
+                "NOT_FOUND",
+                "Project not found"
             );
         }
-    )
 
-    .post(
-        "/:projectSlug/files",
-        requireAuth,
-        requireRole("Admin", "Owner", "Member"),
-        requireProjectMembership(),
-        zValidator(
-            "form",
-            uploadSchema,
-            (result, c) => {
-                if (!result.success) {
-                    throw new AppError(
-                        400,
-                        "VALIDATION_ERROR",
-                        "Invalid upload data"
-                    );
-                }
-            }
-        ),
-        async (c) => {
-            const { projectSlug } = c.req.param();
 
-            const db = c.get("db");
+        return c.json(
+            project
+        );
+    }
+)
 
-            const user = c.get("user");
 
-            const audit = auditLogger(db);
 
-            const { file } = c.req.valid("form");
+.post(
+    "/",
 
-            if (!user) {
-                throw new AppError(
-                    400,
-                    "Bad Request",
-                    "User not found",
-                );
-            }
+    requireAuth,
 
-            if (!file) {
-                throw new AppError(
-                    400,
-                    "Bad Request",
-                    "No file provided",
-                );
-            }
+    requireRole(
+        "Admin",
+        "Owner",
+        "Member"
+    ),
 
-            const project = await getProjectBySlug(db, projectSlug);
+    validateJson(
+        createProjectSchema
+    ),
 
-            if (!project) {
-                throw new AppError(
-                    404,
-                    "Not Found",
-                    "Project not found",
-                );
-            }
+    async (c) => {
 
-            const duplicate = await checkForDuplicateFileInSameProject(db, project.id, file.name);
-            if (duplicate) {
-                throw new AppError(
-                    400,
-                    "Bad Request",
-                    "A file with that name already exists in this project.",
-                );
-            }
+        const user =
+            c.get("user");
 
-            const fileResult = await handleFileUpload({
-                db,
-                storage: new R2Storage(c.env.FILES),
+
+        if (!user) {
+            throw new AppError(
+                400,
+                "BAD_REQUEST",
+                "User not found"
+            );
+        }
+
+
+        const project =
+            await createProject({
+                db: c.get("db"),
+
+                userId:
+                    user.id,
+
+                data:
+                    await c.req.json(),
+            });
+
+
+
+        return c.json(
+            project,
+            201
+        );
+    }
+)
+
+
+
+.post(
+    "/:projectSlug/files",
+
+    requireAuth,
+
+    requireRole(
+        "Admin",
+        "Owner",
+        "Member"
+    ),
+
+    requireProjectMembership(),
+
+    zValidator(
+        "form",
+        uploadSchema
+    ),
+
+    async (c) => {
+
+        const user =
+            c.get("user");
+
+
+        if (!user) {
+            throw new AppError(
+                400,
+                "BAD_REQUEST",
+                "User not found"
+            );
+        }
+
+
+
+        const {
+            file,
+        } = c.req.valid(
+            "form"
+        );
+
+
+
+        const result =
+            await uploadProjectFile({
+
+                db:
+                    c.get("db"),
+
+                storage:
+                    new R2Storage(
+                        c.env.FILES
+                    ),
+
+                userId:
+                    user.id,
+
+                projectSlug:
+                    c.req.param(
+                        "projectSlug"
+                    ),
+
                 file,
-                uploadedBy: user.id,
-                options: {
-                    location: `projects`,
-                }
             });
 
-            await saveProjectFile(db, project.id, fileResult.id);
 
-            await audit.create({
-                userId: user.id,
-                action: AuditActions.PROJECT_FILE_UPLOADED,
-                resourceType: "file",
-                resourceId: fileResult.id,
-                description: `Uploaded file ${fileResult.originalName} to project ${project.slug}`,
-            });
 
-            return c.json(
-                {
-                    id: fileResult.id,
-                },
-                201
+        return c.json(
+            {
+                id:
+                    result.id,
+            },
+
+            201
+        );
+    }
+)
+
+
+
+.delete(
+    "/:id",
+    requireAuth,
+    requireRole("Admin", "Owner"),
+    requireProjectMembership("Owner", "lead"),
+
+    async (c) => {
+
+        const user =  c.get("user");
+
+        const services = c.get("services");
+
+
+        if (!user) {
+            throw new AppError(
+                400,
+                "BAD_REQUEST",
+                "User not found"
             );
         }
-    )
-
-    .post(
-        "/",
-        requireAuth,
-        requireRole("Admin", "Owner", "Member"),
-        validateJson(createProjectSchema),
-        async (c) => {
-            const db = c.get("db");
-            const user = c.get("user");
-
-            const audit = auditLogger(db);
-
-            if (!user) {
-                throw new AppError(
-                    400,
-                    "Bad Request",
-                    "User not found",
-                );
-            }
-
-            const body = await c.req.json();
-
-            const project = await createProject(db, {
-                ...body,
-                createdBy: user.id,
-            });
-
-            await audit.create({
-                userId: user.id,
-                action: AuditActions.PROJECT_CREATED,
-                resourceType: "project",
-                resourceId: project.id,
-                description: `Created project ${project.slug}`,
-            });
-
-            return c.json(
-                {
-                    ...project,
-                },
-                201
-            );
-        }
-    )
 
 
-    .get(
-        "/:projectSlug",
-        requireAuth,
-        requireRole("Admin", "Owner", "Member"),
-        requireProjectMembership(),
-        async (c) => {
-            const { projectSlug } = c.req.param();
+        await deleteProject({
+            services,
+            id: c.req.param("id"),
+            userId: user.id,
+        });
 
-            const db = c.get("db");
-
-            const project = await getProjectBySlug(db, projectSlug);
-
-            if (!project) {
-                throw new AppError(
-                    404,
-                    "Not Found",
-                    "Project not found",
-                );
-            }
-            return c.json(
-                {
-                    ...project,
-                    files: project.files.map((pf) => pf.file),
-                    members: project.members.map((pm) => ({
-                        id: pm.id,
-                        role: pm.role,
-                        joinedAt: pm.joinedAt,
-                        user: pm.user,
-                    })),
-                },
-                200
-            )
-        }
-    )
-
-
-    .delete(
-        "/:id",
-        requireAuth,
-        requireRole("Admin", "Owner", "Member"),
-        requireProjectMembership("Owner", "lead"),
-        async (c) => {
-            const { id } = c.req.param();
-
-            const db = c.get("db");
-
-            const user = c.get("user");
-
-            const audit = auditLogger(db);
-
-            const project = await getProjectById(db, id);
-
-            await deleteProject(db, id);
-
-            
-            await audit.create({
-                userId: user?.id,
-                action: AuditActions.PROJECT_DELETED,
-                resourceType: "project",
-                resourceId: id,
-                description: `Deleted project ${project?.slug}`,
-            });
-
-            return c.json(
-                {
-                    message: "Project deleted successfully",
-                },
-                200
-            );
-        }
-    )
+        return c.json({
+            message:
+                "Project deleted successfully",
+        });
+    }
+);

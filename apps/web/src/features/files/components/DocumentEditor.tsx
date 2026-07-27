@@ -46,18 +46,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { useProjectFileUpload } from "@/features/projects/useProjectFileUpload";
 
-
-const slugToProjectNameMap = (slug: string) =>
-    slug
-        .split("-")
-        .map(
-            word =>
-                word.charAt(0).toUpperCase() +
-                word.slice(1)
-        )
-        .join(" ");
-
-
 export const DocumentEditor = ({
     fileRecord,
     projectSlug,
@@ -202,65 +190,6 @@ export const DocumentEditor = ({
 
     return (
         <div className="flex flex-col gap-4">
-
-
-            <Breadcrumb>
-
-                <BreadcrumbList>
-
-                    <BreadcrumbItem className="hidden md:block">
-
-                        <BreadcrumbLink
-                            onClick={() =>
-                                navigate("/dashboard")
-                            }
-                        >
-                            Projects
-                        </BreadcrumbLink>
-
-                    </BreadcrumbItem>
-
-
-                    <BreadcrumbSeparator />
-
-
-                    <BreadcrumbItem>
-
-                        <BreadcrumbLink
-                            onClick={() =>
-                                navigate(
-                                    `/dashboard/projects/${projectSlug}`
-                                )
-                            }
-                        >
-                            {
-                                slugToProjectNameMap(
-                                    projectSlug
-                                )
-                            }
-                        </BreadcrumbLink>
-
-                    </BreadcrumbItem>
-
-
-                    <BreadcrumbSeparator />
-
-
-                    <BreadcrumbItem>
-
-                        <BreadcrumbPage>
-                            {filename}
-                        </BreadcrumbPage>
-
-                    </BreadcrumbItem>
-
-
-                </BreadcrumbList>
-
-            </Breadcrumb>
-
-
-
             <div
                 className="
                     flex

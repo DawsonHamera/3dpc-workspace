@@ -52,7 +52,6 @@ export const files = pgTable("files", {
     metadata: jsonb("metadata"),
 
     uploadedBy: uuid("uploaded_by")
-        .notNull()
         .references(() => users.id, {
             onDelete: "set null",
         }),

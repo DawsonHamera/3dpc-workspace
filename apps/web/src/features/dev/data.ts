@@ -101,7 +101,7 @@ export const devFeatures: DevFeature[] = [
         description:
             "Add browser-based previews for 3D files, allowing members to inspect models without downloading them.",
         date: "Future",
-        status: "planned",
+        status: "complete",
     },
 
     {
@@ -178,5 +178,17 @@ export const devLog: DevLogEntry[] = [
         description:
             "Updated dashboard navigation with a cleaner structure and improved organization of projects, resources, and club management tools.",
         date: "July 24, 2026",
+    },
+     {
+        title: "Added 3D Model Previews",
+        description:
+            "Added 3D model previews to projects, allowing users to view and interact with 3D models directly in the browser.",
+        date: "July 25, 2026",
+    },
+    {
+        title: "Added theme toggle",
+        description:
+            "Added a theme toggle to the dashboard, allowing users to switch between light and dark modes.",
+        date: "July 26, 2026",
     },
 ];

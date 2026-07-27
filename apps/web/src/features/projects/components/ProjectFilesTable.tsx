@@ -269,7 +269,7 @@ export function ProjectFilesTable({
                                                 <DropdownMenuItem onClick={() => navigate(`files/${registry.document.template}/edit`)}>
                                                     Document
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => navigate('/create/spreadsheet-template')}>
+                                                <DropdownMenuItem disabled onClick={() => navigate('/create/spreadsheet-template')}>
                                                     Spreadsheet
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>

@@ -1,324 +1,305 @@
 import { Hono } from "hono";
 import { Env } from "../../types";
-import { deleteUser, getUserByIdWithRoles, getUsersWithRoles, updateUser, updateUserAvatar } from "./service";
-import { requireRole } from "../../middleware/role";
-import { requireAuth } from "../../middleware/auth";
-import { handleFileRemoval, handleFileUpload, saveFile } from "../files/service";
-import { R2Storage } from "../../services/storage";
-import { AppError } from "../../lib/errors";
-import { AuditActions, auditLogger } from "../../services/auditLog";
-import { verifyUser } from "../auth/service";
-import { hashToken } from "../../lib/crypto";
-import { zValidator } from "@hono/zod-validator";
-import z from "zod";
-import getRoleNameById, { getRoleByName } from "../roles/service";
-import { validateJson } from "../../lib/validation";
 
-function sanitizeFilename(name: string) {
-    return name
-        .replace(/[^a-zA-Z0-9._-]/g, "_")
-        .slice(0, 100);
-}
+import {
+    getUsers,
+    getUser,
+    removeUser,
+    changeUserPassword,
+    updateAvatar,
+    updateUserRole,
+} from "./service";
+
+import {
+    requireAuth
+} from "../../middleware/auth";
+
+import {
+    requireRole
+} from "../../middleware/role";
+
+import {
+    AppError
+} from "../../lib/errors";
+
+import {
+    validateJson
+} from "../../lib/validation";
+
+import {
+    updatePasswordSchema,
+    updateRoleSchema,
+} from "./schema";
 
 
 const usersRoutes = new Hono<Env>()
 
-    .get("/", requireAuth, requireRole("Admin", "Owner"), async (c) => {
-        const db = c.get("db");
-        const users = await getUsersWithRoles(db);
-        const sanitizedUsers = users.map(user => ({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            avatarId: user.avatarFileId,
-        }));
-        return c.json(sanitizedUsers);
-    })
 
-    .get("/:id", requireAuth, requireRole("Admin", "Owner"), async (c) => {
-        const db = c.get("db");
-        const { id } = c.req.param();
-        const user = await getUserByIdWithRoles(db, id);
+.get(
+    "/",
+    requireAuth,
+    requireRole(
+        "Admin",
+        "Owner"
+    ),
+    async (c) => {
+
+        const users =
+            await getUsers({
+                services: c.get("services"),
+            });
+
+
+        return c.json(
+            users.map(user => ({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                avatarId: user.avatarFileId,
+            }))
+        );
+    }
+)
+
+
+
+.get(
+    "/:id",
+    requireAuth,
+    requireRole(
+        "Admin",
+        "Owner"
+    ),
+    async (c) => {
+
+        const user =
+            await getUser({
+                services: c.get("services"),
+                id: c.req.param("id"),
+            });
+
+
+        if (!user) {
+            throw new AppError(
+                404,
+                "USER_NOT_FOUND",
+                "User not found"
+            );
+        }
+
+
         return c.json(user);
-    })
+    }
+)
 
-    .delete(
-        "/:id",
-        requireAuth,
-        requireRole("Admin", "Owner", "Member"),
-        async (c) => {
-            const db = c.get("db");
-            const user = c.get("user");
-            const { id } = c.req.param();
 
-            const audit = auditLogger(db);
 
-            if (user?.role === "Member" && user?.id !== id) {
-                throw new AppError(
-                    403,
-                    "FORBIDDEN",
-                    "You are not allowed to delete this user"
-                );
-            }
+.delete(
+    "/:id",
+    requireAuth,
+    requireRole(
+        "Admin",
+        "Owner",
+        "Member"
+    ),
+    async (c) => {
 
-            const userToDelete = await getUserByIdWithRoles(db, id);
+        const currentUser =
+            c.get("user");
 
-            await deleteUser(db, id);
 
-            await audit.create({
-                userId: user!.id,
-                action: AuditActions.USER_REMOVED,
-                resourceType: "user",
-                resourceId: id,
-                description: `Deleted user ${userToDelete?.name}`,
-            });
-            return c.json({
-                message: "Deleted user",
-            });
+        if (!currentUser) {
+            throw new AppError(
+                401,
+                "UNAUTHORIZED",
+                "Unauthorized"
+            );
         }
-    )
-
-    .patch(
-        "/:id/role",
-        requireAuth,
-        requireRole("Admin", "Owner"),
-        validateJson(
-            z.object({
-                roleName: z.string(),
-            })
-        ),
-        async (c) => {
-            const db = c.get("db");
-            const { id } = c.req.param();
-            const { roleName } = await c.req.json();
-
-            const user = c.get("user");
-
-            const audit = auditLogger(db);
-
-            const roleId = await getRoleByName(db, roleName);
-
-            const updatedUser = await updateUser(db, id, { roleId });
 
 
-            await audit.create({
-                userId: user!.id,
-                action: AuditActions.USER_UPDATED,
-                resourceType: "user",
-                resourceId: id,
-                description: `Updated role for user ${updatedUser?.name} to ${roleName}`,
-            });
+        const id =
+            c.req.param("id");
 
-            return c.json({
-                message: "Updated user role",
-            });
+
+        if (
+            currentUser.role === "Member" &&
+            currentUser.id !== id
+        ) {
+            throw new AppError(
+                403,
+                "FORBIDDEN",
+                "Cannot delete another user"
+            );
         }
-    )
 
-    .patch(
-        "/:id/password",
-        requireAuth,
-        requireRole("Admin", "Owner", "Member"),
-        validateJson(
-            z.object({
-                currentPassword: z.string().optional(),
-                newPassword: z
-                    .string()
-                    .min(8, "New password must be at least 8 characters long"),
-            })
-        ),
-        async (c) => {
 
-            const db = c.get("db");
-            const { id } = c.req.param();
+        const deleted =
+            await removeUser({
+                services: c.get("services"),
+                id,
+                deletedBy: currentUser.id,
+            });
 
-            const {
+
+        return c.json({
+            message: "Deleted user",
+            id: deleted.id,
+        });
+    }
+)
+
+
+
+.patch(
+    "/:id/role",
+    requireAuth,
+    requireRole(
+        "Admin",
+        "Owner"
+    ),
+    validateJson(
+        updateRoleSchema
+    ),
+    async (c) => {
+
+        const user =
+            c.get("user");
+
+
+        if (!user) {
+            throw new AppError(
+                401,
+                "UNAUTHORIZED",
+                "Unauthorized"
+            );
+        }
+
+
+        const {
+            roleName
+        } =
+            await c.req.json();
+
+
+        const updated =
+            await updateUserRole({
+                services: c.get("services"),
+                userId: c.req.param("id"),
+                roleName,
+                updatedBy: user.id,
+            });
+
+
+        return c.json({
+            message: "Updated user role",
+            user: updated,
+        });
+    }
+)
+
+
+
+.patch(
+    "/:id/password",
+    requireAuth,
+    requireRole(
+        "Admin",
+        "Owner",
+        "Member"
+    ),
+    validateJson(
+        updatePasswordSchema
+    ),
+    async (c) => {
+
+        const currentUser =
+            c.get("user");
+
+
+        if (!currentUser) {
+            throw new AppError(
+                401,
+                "UNAUTHORIZED",
+                "Unauthorized"
+            );
+        }
+
+
+        const {
+            currentPassword,
+            newPassword,
+        } =
+            await c.req.json();
+
+
+        const updated =
+            await changeUserPassword({
+                services: c.get("services"),
+                user: currentUser,
+                userId: c.req.param("id"),
                 currentPassword,
                 newPassword,
-            } = await c.req.json();
-
-
-            const user = c.get("user");
-
-            const audit = auditLogger(db);
-
-
-            if (
-                user?.role === "Member" &&
-                user.id !== id
-            ) {
-                throw new AppError(
-                    403,
-                    "FORBIDDEN",
-                    "You are not allowed to change this user's password"
-                );
-            }
-
-
-
-            const isAdmin =
-                user?.role === "Admin" ||
-                user?.role === "Owner";
-
-
-            if (!isAdmin) {
-
-                if (!currentPassword) {
-
-                    throw new AppError(
-                        400,
-                        "BAD_REQUEST",
-                        "Current password is required"
-                    );
-
-                }
-
-                if (!user) {
-                    throw new AppError(
-                        400,
-                        "BAD_REQUEST",
-                        "User retrieval failed"
-                    );
-                }
-
-
-                const verify = await verifyUser(
-                    db,
-                    user.email,
-                    currentPassword
-                );
-
-
-                if (!verify) {
-
-                    throw new AppError(
-                        401,
-                        "INVALID_CREDENTIALS",
-                        "Invalid current password."
-                    );
-
-                }
-
-            }
-
-
-
-            const passwordHash = await hashToken(
-                newPassword
-            );
-
-
-            const updatedUser = await updateUser(
-                db,
-                id,
-                {
-                    passwordHash,
-                }
-            );
-
-
-            await audit.create({
-                userId: user?.id,
-                action: AuditActions.USER_UPDATED,
-                resourceType: "user",
-                resourceId: id,
-                description:
-                    `Updated password for user ${updatedUser?.name}`,
             });
 
 
-            return c.json({
-                message: "Updated user password",
-            });
+        return c.json({
+            message: "Updated password",
+            userId: updated?.id,
+        });
+    }
+)
 
+
+
+.patch(
+    "/avatar",
+    requireAuth,
+    async (c) => {
+
+        const user =
+            c.get("user");
+
+
+        if (!user) {
+            throw new AppError(
+                401,
+                "UNAUTHORIZED",
+                "Unauthorized"
+            );
         }
-    )
 
-    .patch(
-        "/avatar",
-        requireAuth,
-        async (c) => {
-            const body = await c.req.parseBody();
 
-            const user = c.get("user");
+        const body =
+            await c.req.parseBody();
 
-            const file = body.file;
 
-            const db = c.get("db");
+        const file =
+            body.file;
 
-            const audit = auditLogger(db);
 
-            const storage = new R2Storage(c.env.FILES);
+        if (!(file instanceof File)) {
+            throw new AppError(
+                400,
+                "BAD_REQUEST",
+                "No file provided"
+            );
+        }
 
-            if (!user) {
-                throw new AppError(
-                    401,
-                    "UNAUTHORIZED",
-                    "Unauthorized"
-                );
-            }
 
-            if (!file) {
-                throw new AppError(
-                    400,
-                    "BAD_REQUEST",
-                    "No file provided"
-                )
-            }
-            console.log("Uploading avatar for user:", user.id);
-
-            const userData = await getUserByIdWithRoles(db, user.id);
-
-            if (!userData) {
-                throw new AppError(
-                    404,
-                    "USER_NOT_FOUND",
-                    "User not found"
-                );
-            }
-
-            if (userData.avatarFileId) {
-                console.log("Deleting old avatar for user:", user.id);
-                await updateUserAvatar(
-                    db,
-                    user.id,
-                    null
-                );
-                await handleFileRemoval(db, storage, userData.avatarFileId);
-            }
-
-            const savedFile = await handleFileUpload({
-                db,
-                storage,
+        const savedFile =
+            await updateAvatar({
+                services: c.get("services"),
+                user,
                 file,
-                uploadedBy: user.id,
-                options: {
-                    requiredTypes: ["image/png", "image/jpeg", "image/jpg", "image/gif"],
-                    maxFileSize: (5 * 1024 * 1024), // 5MB
-                    location: "avatars"
-                }
             });
 
-            // update user reference
-            await updateUserAvatar(
-                db,
-                user.id,
-                savedFile.id
-            );
 
-            await audit.create({
-                userId: user.id,
-                action: AuditActions.USER_UPDATED,
-                resourceType: "user",
-                resourceId: user.id,
-                description: `Updated avatar for user ${userData.name}`,
-            });
+        return c.json({
+            avatarFileId: savedFile.id,
+        });
+    }
+);
 
-            return c.json({
-                avatarFileId: savedFile.id,
-            });
-        }
-    )
 
 export default usersRoutes;

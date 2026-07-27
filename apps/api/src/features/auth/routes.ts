@@ -6,9 +6,9 @@ import { zValidator } from "@hono/zod-validator";
 import { validateJson } from "../../lib/validation";
 import { requireAuth } from "../../middleware/auth";
 import { AppError } from "../../lib/errors";
-import { getUserByIdWithRoles } from "../users/service";
 import { AuditActions, auditLogger } from "../../services/auditLog";
 import { requireRole } from "../../middleware/role";
+import { findUserById } from "../users/repository";
 
 const authRoutes = new Hono<Env>()
 
@@ -25,7 +25,7 @@ const authRoutes = new Hono<Env>()
 
         const db = c.get("db");
 
-        const user = await getUserByIdWithRoles(db, userId);
+        const user = await findUserById(db, userId);
 
         if (!user) {
             throw new AppError(

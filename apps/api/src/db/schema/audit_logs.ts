@@ -16,7 +16,9 @@ export const auditLogs = pgTable("audit_logs", {
     .primaryKey(),
 
   userId: uuid("user_id")
-        .references(() => users.id),
+        .references(() => users.id, {
+            onDelete: "set null",
+        }),
 
   action: text("action").notNull(),
 

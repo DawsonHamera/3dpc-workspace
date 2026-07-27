@@ -1,191 +1,325 @@
-import { and, eq, or } from "drizzle-orm";
-import { files, projectFiles, projectMembers, projects } from "../../db/schema";
-import { Db } from "../../types";
-import { deleteFile } from "../files/service";
+import {
+    findBySlug,
+    findById,
+    findForUser,
+    findPublic,
+    insert,
+    insertMember,
+    insertFile,
+    findDuplicateFile,
+    remove,
+} from "./repository";
 
-export const getProjectBySlug = async (db: Db, projectSlug: string) => {
-    const project = await db.query.projects.findFirst({
-        where: (projects, { eq }) => eq(projects.slug, projectSlug),
+import {
+    R2Storage,
+} from "../../services/storage";
 
-        with: {
-            files: {
-                with: {
-                    file: true,
-                },
-            },
-            members: {
-                with: {
-                    user: {
-                        columns: {
-                            id: true,
-                            name: true,
-                            email: true,
-                            avatarFileId: true,
-                        },
-                    },
-                },
-            },
-        },
-    });
+import {
+    auditLogger,
+    AuditActions,
+} from "../../services/auditLog";
+
+import type { Db, ServicesContext } from "../../types";
+
+import { AppError } from "../../lib/errors";
+import { removeFile, uploadFile } from "../files/service";
+
+
+
+export async function getProjectsForUser(
+    db: Db,
+    userId: string
+) {
+    return findForUser(
+        db,
+        userId
+    );
+}
+
+
+
+export async function getPublicProjects(
+    db: Db
+) {
+    return findPublic(db);
+}
+
+
+
+export async function getProjectBySlug(
+    db: Db,
+    slug: string
+) {
+    const project =
+        await findBySlug(
+            db,
+            slug
+        );
 
     if (!project) {
         return null;
     }
 
-    const filteredProject = {
+
+    return {
         ...project,
-        files: project.files.filter(
-            ({ file }) => !file.isTemplate
+
+        files: project.files
+            .filter(
+                ({ file }) =>
+                    !file.isTemplate
+            ).map(
+                ({ file }) => ({
+                    id: file.id,
+                    originalName: file.originalName,
+                    type: file.type,
+                    size: file.size,
+                    createdAt: file.createdAt,
+                })
+
+            ),
+
+        members: project.members.map(
+            member => ({
+                id: member.id,
+                role: member.role,
+                joinedAt: member.joinedAt,
+                user: member.user,
+            })
         ),
     };
-
-    return filteredProject;
 }
 
-export const getProjectById = async (db: Db, projectId: string) => {
-    const project = await db.query.projects.findFirst({
-        where: (projects, { eq }) => eq(projects.id, projectId),
-        with: {
-            files: {
-                with: {
-                    file: true,
-                },
-            },
-            members: {
-                with: {
-                    user: {
-                        columns: {
-                            id: true,
-                            name: true,
-                            email: true,
-                            avatarFileId: true,
-                        },
-                    },
-                },
-            },
-        },
-    });
+
+
+export async function getProjectById(
+    db: Db,
+    id: string
+) {
+    return findById(
+        db,
+        id
+    );
+}
+
+
+
+export async function createProject(
+    {
+        db,
+        userId,
+        data,
+    }: {
+        db: Db;
+        userId: string;
+        data: {
+            name: string;
+            slug: string;
+            description?: string;
+            shortDescription?: string;
+            visibility?: "public" | "private";
+            isFeatured?: boolean;
+        };
+    }
+) {
+
+    const project =
+        await insert(
+            db,
+            {
+                name: data.name,
+                slug: data.slug,
+                description: data.description,
+                shortDescription: data.shortDescription,
+
+                visibility:
+                    data.visibility ?? "public",
+
+                isFeatured:
+                    data.isFeatured ? 1 : 0,
+            }
+        );
+
+
+    await insertMember(
+        db,
+        {
+            projectId: project.id,
+            userId,
+            role: "owner",
+        }
+    );
+
+
     return project;
 }
 
-export const getProjectsForUser = async (db: Db, userId: string) => {
-    const result = await db
-        .select({
-            project: projects,
-        })
-        .from(projects)
-        .leftJoin(
-            projectMembers,
-            and(
-                eq(projectMembers.projectId, projects.id),
-                eq(projectMembers.userId, userId)
-            )
-        )
-        .where(
-            or(
-                eq(projects.visibility, "public"),
-                eq(projectMembers.userId, userId)
-            )
+
+
+export async function uploadProjectFile(
+    {
+        db,
+        storage,
+        userId,
+        projectSlug,
+        file,
+    }: {
+        db: Db;
+        storage: R2Storage;
+        userId: string;
+        projectSlug: string;
+        file: File;
+    }
+) {
+
+    const project =
+        await findBySlug(
+            db,
+            projectSlug
         );
 
-    return result.map(({ project }) => project);
-};
 
-export const getPublicProjects = async (db: Db) => {
-    const result = await db
-        .select({
-            project: projects,
-        })
-        .from(projects)
-        .where(
-            or(
-                eq(projects.visibility, "public"),
-            )
+    if (!project) {
+        throw new AppError(
+            404,
+            "NOT_FOUND",
+            "Project not found"
+        );
+    }
+
+1
+
+    const duplicate =
+        await findDuplicateFile(
+            db,
+            project.id,
+            file.name
         );
 
-    return result.map(({ project }) => project);
-};
-
-export const confirmUserProjectMembership = async (db: Db, userId: string, projectId: string) => {
-    const membership = await db.query.projectMembers.findFirst({
-        where: (projectMembers, { eq }) => eq(projectMembers.userId, userId) && eq(projectMembers.projectId, projectId),
-    });
-
-    return membership;
-}
-
-export const saveProjectFile = async (db: Db, projectId: string, fileId: string) => {
-    await db.insert(projectFiles).values({
-        projectId,
-        fileId,
-    });
-}
-
-export const checkForDuplicateFileInSameProject = async (
-    db: Db,
-    projectId: string,
-    fileName: string
-) => {
-    const duplicate = await db
-        .select({
-            id: files.id,
-            name: files.originalName,
-        })
-        .from(projectFiles)
-        .innerJoin(
-            files,
-            eq(projectFiles.fileId, files.id)
-        )
-        .where(
-            and(
-                eq(projectFiles.projectId, projectId),
-                eq(files.originalName, fileName)
-            )
-        )
-        .limit(1);
-
-    return duplicate[0] ?? null;
-};
-
-export const createProject = async (db: Db, projectData: {
-    name: string;
-    slug: string;
-    description?: string;
-    shortDescription?: string;
-    visibility?: "public" | "private";
-    isFeatured?: boolean;
-    createdBy: string;
-}) => {
-    const newProject = await db.insert(projects).values({
-        name: projectData.name,
-        slug: projectData.slug,
-        description: projectData.description,
-        shortDescription: projectData.shortDescription,
-        visibility: projectData.visibility ?? "public",
-        isFeatured: projectData.isFeatured ? 1 : 0,
-    }).returning();
-
-    await db.insert(projectMembers).values({
-        projectId: newProject[0].id,
-        userId: projectData.createdBy,
-        role: "owner",
-    });
-
-    return newProject[0];
-};
-
-export const deleteProject = async (db: Db, projectId: string) => {
-   const projectFilesIds = await db
-        .select({ id: projectFiles.fileId })
-        .from(projectFiles)
-        .where(eq(projectFiles.projectId, projectId));
+    if (duplicate) {
+        throw new AppError(
+            400,
+            "BAD_REQUEST",
+            "A file with that name already exists in this project."
+        );
+    }
 
 
-    projectFilesIds.forEach(async (file) => {
-        await deleteFile(db, file.id);
-    });
 
-    await db.delete(projects).where(
-        eq(projects.id, projectId)
+    const uploaded =
+        await uploadFile({
+            services: { db, storage, audit: auditLogger(db) },
+            file,
+
+            uploadedBy: userId,
+
+            options: {
+                location: "projects",
+            },
+        });
+
+
+
+    await insertFile(
+        db,
+        {
+            projectId: project.id,
+            fileId: uploaded.id,
+        }
     );
+
+
+
+    const audit =
+        auditLogger(db);
+
+
+    await audit.create({
+        userId,
+
+        action:
+            AuditActions.PROJECT_FILE_UPLOADED,
+
+        resourceType:
+            "file",
+
+        resourceId:
+            uploaded.id,
+
+        description:
+            `Uploaded file ${uploaded.originalName} to project ${project.slug}`,
+    });
+
+
+
+    return uploaded;
+}
+
+
+
+export async function deleteProject(
+    {
+        services: { db, storage, audit },
+        id,
+        userId,
+    }: {
+        services: ServicesContext;
+        id: string;
+        userId: string;
+    }
+) {
+
+    const project =
+        await findById(
+            db,
+            id
+        );
+
+
+    if (!project) {
+        throw new AppError(
+            404,
+            "NOT_FOUND",
+            "Project not found"
+        );
+    }
+
+
+
+    // remove files first because project_files
+    // and storage need cleanup
+    for (const projectFile of project.files) {
+
+        await removeFile(
+            {
+                services: { db, storage, audit },
+                userId,
+                id: projectFile.file.id
+            }
+        );
+    }
+
+
+
+    await remove(
+        db,
+        id
+    );
+
+
+    await audit.create({
+        userId,
+
+        action:
+            AuditActions.PROJECT_DELETED,
+
+        resourceType:
+            "project",
+
+        resourceId:
+            id,
+
+        description:
+            `Deleted project ${project.slug}`,
+    });
 }

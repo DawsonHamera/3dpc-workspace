@@ -25,7 +25,7 @@ export function useFileContent(
                 throw new Error("Unsupported file type");
             }
 
-            return registryEntry.adapter(blob);
+            return registryEntry.adapter(blob, fileRecord);
         },
 
         enabled: !!blob && !!fileRecord,

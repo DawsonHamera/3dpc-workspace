@@ -8,13 +8,16 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { queryClient } from './lib/queryClient.ts'
+import { ThemeProvider } from './providers/ThemeProvider.tsx'
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-      <QueryClientProvider client={queryClient}>
-         <TooltipProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ThemeProvider>
         <App />
-        </TooltipProvider>
-      </QueryClientProvider>
+        </ThemeProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );
