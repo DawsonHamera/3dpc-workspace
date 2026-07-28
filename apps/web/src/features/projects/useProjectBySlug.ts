@@ -19,6 +19,10 @@ export function useProjectBySlug(projectSlug: string) {
     });
 }
 
+export type ProjectExtended = NonNullable<
+  NonNullable<ReturnType<typeof useProjectBySlug>["data"]>
+>;
+
 export type ProjectMember = NonNullable<
   NonNullable<ReturnType<typeof useProjectBySlug>["data"]>["members"][0]
 >;

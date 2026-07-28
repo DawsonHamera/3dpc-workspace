@@ -1,25 +1,47 @@
-import { ProjectFilesTable } from "@/features/projects/components/ProjectFilesTable";
-import { ProjectMembersTable } from "@/features/projects/components/ProjectMembersTable";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Item, ItemMedia, ItemContent, ItemTitle, ItemDescription, ItemActions } from "@/components/ui/item";
+import {
+    Activity,
+    FileText,
+    LayoutDashboard,
+    MessageSquare,
+    Settings,
+    Users,
+} from "lucide-react";
+
 import { Spinner } from "@/components/ui/spinner";
+
+import { useParams } from "react-router-dom";
+
 import { useProjectBySlug } from "@/features/projects/useProjectBySlug";
-import { FolderIcon, KeyIcon } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+
+import {
+    ProjectLayout,
+    type ProjectTab,
+} from "@/features/projects/components/project/ProjectLayout";
+
+import { ProjectOverviewTab } from "@/features/projects/components/project/ProjectOverviewTab";
+import { ProjectFilesTab } from "@/features/projects/components/project/ProjectFilesTab";
+import { ProjectMembersTab } from "@/features/projects/components/project/ProjectMembersTab";
+import { ProjectActivityTab } from "@/features/projects/components/project/ProjectActivityTab";
+import { ProjectChatTab } from "@/features/projects/components/project/ProjectChatTab";
+import { ProjectSettingsTab } from "@/features/projects/components/project/ProjectSettingsTab";
+import { ProjectProvider } from "@/features/projects/context/ProjectContext";
 
 export const ProjectPage = () => {
-    const { slug } = useParams<{ slug: string }>();
-    const { data: projectData, isLoading: isProjectLoading } = useProjectBySlug(slug || "");
 
-    const navigate = useNavigate();
+    const { slug } = useParams<{
+        slug: string;
+    }>();
 
-    if (isProjectLoading) {
+    const {
+        data: project,
+        isLoading,
+    } = useProjectBySlug(slug ?? "");
+
+    if (isLoading) {
         return <Spinner />;
     }
 
-    if (!projectData) {
+    if (!project) {
         return (
             <div className="flex flex-1 items-center justify-center">
                 <p className="text-sm text-muted-foreground">
@@ -29,82 +51,71 @@ export const ProjectPage = () => {
         );
     }
 
+    const tabs: ProjectTab[] = [
+        {
+            value: "overview",
+            label: "Overview",
+            icon: <LayoutDashboard className="h-4 w-4" />,
+            content: (
+                <ProjectOverviewTab
+                    project={project}
+                />
+            ),
+        },
+        {
+            value: "files",
+            label: "Files",
+            icon: <FileText className="h-4 w-4" />,
+            content: (
+                <ProjectFilesTab
+                    project={project}
+                />
+            ),
+        },
+        {
+            value: "members",
+            label: "Members",
+            icon: <Users className="h-4 w-4" />,
+            content: (
+                <ProjectMembersTab
+                    project={project}
+                />
+            ),
+        },
+        {
+            value: "activity",
+            label: "Activity",
+            icon: <Activity className="h-4 w-4" />,
+            content: (
+                <ProjectActivityTab />
+            ),
+        },
+        {
+            value: "chat",
+            label: "Chat",
+            icon: <MessageSquare className="h-4 w-4" />,
+            content: (
+                <ProjectChatTab />
+            ),
+        },
+        {
+            value: "settings",
+            label: "Settings",
+            icon: <Settings className="h-4 w-4" />,
+            content: (
+                <ProjectSettingsTab/>
+            ),
+        },
+    ];
 
     return (
-        <div className="flex flex-1 flex-col gap-10">
-            <Breadcrumb>
-                <BreadcrumbList>
-                    <BreadcrumbItem className="hidden md:block">
-                        <BreadcrumbLink onClick={() => navigate("/dashboard")}>
-                            Projects
-                        </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator className="hidden md:block" />
-                    <BreadcrumbItem>
-                        <BreadcrumbPage>{projectData.name}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                </BreadcrumbList>
-            </Breadcrumb>
-            <div>
-                <h1 className="text-2xl font-bold">
-                    {projectData.name}
-                </h1>
-                <p className="text-muted-foreground">
-                    Project ID: {projectData.id}
-                </p>
-            </div>
-
-            <ProjectFilesTable
-                files={projectData.files}
-                projectSlug={projectData.slug}
-
+        <ProjectProvider project={project}>
+            <ProjectLayout
+                project={project}
+                tabs={tabs}
             />
-
-            <ProjectMembersTable members={projectData.members} />
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>
-                        Project Details
-                    </CardTitle>
-                    <CardDescription>
-                        View and manage your project settings.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-3">
-                    <Item>
-                        <ItemMedia variant="icon">
-                            <FolderIcon />
-                        </ItemMedia>
-                        <ItemContent>
-                            <ItemTitle>
-                                Project Name
-                            </ItemTitle>
-                            <ItemDescription>
-                                {projectData.name}
-                            </ItemDescription>
-                        </ItemContent>
-                    </Item>
-                    <Item>
-                        <ItemMedia variant="icon">
-                            <KeyIcon />
-                        </ItemMedia>
-                        <ItemContent>
-                            <ItemTitle>
-                                Project ID
-                            </ItemTitle>
-                            <ItemDescription>
-                                {projectData.id}
-                            </ItemDescription>
-                        </ItemContent>
-                        <ItemActions>
-                            <Button variant="outline">
-                                Copy ID
-                            </Button>
-                        </ItemActions>
-                    </Item>
-                </CardContent>
-            </Card>
-        </div>
+        </ProjectProvider>
     );
-}
+};
+
+export default ProjectPage;

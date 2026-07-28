@@ -191,4 +191,10 @@ export const devLog: DevLogEntry[] = [
             "Added a theme toggle to the dashboard, allowing users to switch between light and dark modes.",
         date: "July 26, 2026",
     },
+    {
+        title: "Improved Project Workspace Layout",
+        description:
+            "Updated project pages with a featured header, improved organization, and a more scalable tab-based structure for future project features.",
+        date: "July 2026",
+    },
 ];

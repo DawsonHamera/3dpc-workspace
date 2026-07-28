@@ -30,10 +30,10 @@ export const uploadFile = async ({
             "video",
             "other",
         ],
-        maxFileSize = 1024 * 1024 * 10,
+        maxFileSize = 1024 * 1024 * 15,
     } = options ?? {};
 
-    validateFile(file, maxFileSize, requiredTypes); // 10MB
+    validateFile(file, maxFileSize, requiredTypes); // 15MB
 
 
     const id = crypto.randomUUID();

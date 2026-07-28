@@ -1,4 +1,5 @@
 import { AppError } from "../../../lib/errors";
+import { formatBytes } from "../../../lib/helpers";
 import { getFileCategory } from "./fileCategory";
 
 export function validateFile(
@@ -10,7 +11,7 @@ export function validateFile(
         throw new AppError(
             400,
             "FILE_TOO_LARGE",
-            "File exceeds size limit"
+            "File size of " + formatBytes(file.size) + " exceeds size limit of " + formatBytes(max)
         );
     }
 
