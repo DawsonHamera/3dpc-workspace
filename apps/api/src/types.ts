@@ -1,5 +1,4 @@
 import type { createDb } from "./db";
-import { UserWithRole } from "./features/users/service";
 import { auditLogger } from "./services/auditLog";
 import { R2Storage } from "./services/storage";
 

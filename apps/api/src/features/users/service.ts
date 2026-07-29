@@ -2,6 +2,7 @@ import {
     deleteUserRecord,
     findUserById,
     findUsersWithRoles,
+    searchUsersRepository,
     updateUserAvatarRecord,
     updateUserRecord,
 } from "./repository";
@@ -342,4 +343,29 @@ export const updateAvatar = async ({
 
 
     return savedFile;
+};
+
+
+export const searchUsers = async ({
+    services,
+    query,
+    limit,
+    excludeUserId
+}: {
+    services: ServicesContext;
+    query?: string;
+    limit?: number;
+    excludeUserId?: string;
+}) => {
+
+    const users =
+        await searchUsersRepository(
+            services.db,
+            query,
+            limit
+        );
+
+
+
+    return users.filter(user => user.id !== excludeUserId);
 };

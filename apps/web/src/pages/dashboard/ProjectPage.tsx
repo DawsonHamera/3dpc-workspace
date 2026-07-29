@@ -77,9 +77,7 @@ export const ProjectPage = () => {
             label: "Members",
             icon: <Users className="h-4 w-4" />,
             content: (
-                <ProjectMembersTab
-                    project={project}
-                />
+                <ProjectMembersTab />
             ),
         },
         {

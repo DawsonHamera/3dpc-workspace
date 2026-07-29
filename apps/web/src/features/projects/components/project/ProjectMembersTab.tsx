@@ -1,13 +1,14 @@
+import { useProject } from "../../context/ProjectContext";
 import { ProjectMembersTable } from "../ProjectMembersTable";
 
-type Props = {
-    project: any;
-};
+export function ProjectMembersTab() {
 
-export function ProjectMembersTab({ project }: Props) {
+    const { project } = useProject();
+
     return (
         <ProjectMembersTable
             members={project.members}
+            projectSlug={project.slug}
         />
     );
 }

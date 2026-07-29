@@ -179,7 +179,7 @@ export const devLog: DevLogEntry[] = [
             "Updated dashboard navigation with a cleaner structure and improved organization of projects, resources, and club management tools.",
         date: "July 24, 2026",
     },
-     {
+    {
         title: "Added 3D Model Previews",
         description:
             "Added 3D model previews to projects, allowing users to view and interact with 3D models directly in the browser.",
@@ -195,6 +195,13 @@ export const devLog: DevLogEntry[] = [
         title: "Improved Project Workspace Layout",
         description:
             "Updated project pages with a featured header, improved organization, and a more scalable tab-based structure for future project features.",
-        date: "July 2026",
+        date: "July 27, 2026",
     },
+    {
+        title: "Added Project Member Invites",
+        description:
+            "Added the ability to search for users, invite members to projects, and remove existing members through the project management interface.",
+        date: "July 28, 2026",
+    },
+
 ];

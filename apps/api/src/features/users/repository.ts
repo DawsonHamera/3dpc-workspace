@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, ilike, or } from "drizzle-orm";
 import { users } from "../../db/schema";
 import { Db } from "../../types";
 
@@ -74,4 +74,49 @@ export const updateUserAvatarRecord = async (
         .where(
             eq(users.id, userId)
         );
+};
+
+
+
+
+export const searchUsersRepository = async (
+    db: Db,
+    query?: string,
+    limit = 20
+) => {
+
+    if (!query) {
+        return await db
+            .select({
+                id: users.id,
+                name: users.name,
+                email: users.email,
+                avatarFileId: users.avatarFileId,
+            })
+            .from(users)
+            .limit(limit);
+    }
+
+
+    return await db
+        .select({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            avatarFileId: users.avatarFileId,
+        })
+        .from(users)
+        .where(
+            or(
+                ilike(
+                    users.name,
+                    `%${query}%`
+                ),
+                ilike(
+                    users.email,
+                    `%${query}%`
+                )
+            )
+        )
+        .limit(limit);
 };

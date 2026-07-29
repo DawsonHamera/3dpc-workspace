@@ -1,4 +1,4 @@
-import { Settings } from "lucide-react";
+import { Delete, Settings } from "lucide-react";
 
 import {
     Card,
@@ -9,8 +9,30 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import { useProject } from "../../context/ProjectContext";
+import { useDeleteProject } from "../../useDeleteProject";
+import { DeleteDialog } from "@/components/custom/DeleteDialog";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function ProjectSettingsTab() {
+
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+    const { project } = useProject();
+
+    const deleteProject = useDeleteProject();
+
+    const navigate = useNavigate();
+
+    const handleDeleteProject = async () => {
+        if (!project) return;
+        
+        await deleteProject.mutateAsync({ id: project.id });
+
+        navigate("/dashboard");
+    }
+
     return (
         <Card>
 
@@ -44,6 +66,7 @@ export function ProjectSettingsTab() {
                 </Button>
 
                 <Button
+                    onClick={() => setDeleteDialogOpen(true)}
                     variant="destructive"
                     className="justify-start"
                 >
@@ -51,7 +74,13 @@ export function ProjectSettingsTab() {
                 </Button>
 
             </CardContent>
-
+            <DeleteDialog
+                open={deleteDialogOpen}
+                onConfirm={handleDeleteProject}
+                title="Delete Project"
+                description="Are you sure you want to delete this project? This action cannot be undone."
+                onOpenChange={setDeleteDialogOpen}
+            />
         </Card>
     );
 }

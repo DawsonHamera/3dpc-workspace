@@ -8,6 +8,7 @@ import {
     changeUserPassword,
     updateAvatar,
     updateUserRole,
+    searchUsers,
 } from "./service";
 
 import {
@@ -35,271 +36,304 @@ import {
 const usersRoutes = new Hono<Env>()
 
 
-.get(
-    "/",
-    requireAuth,
-    requireRole(
-        "Admin",
-        "Owner"
-    ),
-    async (c) => {
+    .get(
+        "/",
+        requireAuth,
+        requireRole(
+            "Admin",
+            "Owner"
+        ),
+        async (c) => {
 
-        const users =
-            await getUsers({
-                services: c.get("services"),
+            const users =
+                await getUsers({
+                    services: c.get("services"),
+                });
+
+
+            return c.json(
+                users.map(user => ({
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    avatarId: user.avatarFileId,
+                }))
+            );
+        }
+    )
+
+    .get(
+        "/directory",
+        requireAuth,
+        requireRole(
+            "Admin",
+            "Owner",
+            "Member"
+        ),
+        async (c) => {
+
+            const query =
+                c.req.query("q");
+
+
+            const limit =
+                Number(
+                    c.req.query("limit") ?? 20
+                );
+
+
+            const users =
+                await searchUsers({
+                    services: c.get("services"),
+                    query,
+                    limit,
+                    excludeUserId: c.get("user")?.id,
+                });
+
+
+            return c.json(users);
+        }
+    )
+
+
+
+    .get(
+        "/:id",
+        requireAuth,
+        requireRole(
+            "Admin",
+            "Owner"
+        ),
+        async (c) => {
+
+            const user =
+                await getUser({
+                    services: c.get("services"),
+                    id: c.req.param("id"),
+                });
+
+
+            if (!user) {
+                throw new AppError(
+                    404,
+                    "USER_NOT_FOUND",
+                    "User not found"
+                );
+            }
+
+
+            return c.json(user);
+        }
+    )
+
+
+
+    .delete(
+        "/:id",
+        requireAuth,
+        requireRole(
+            "Admin",
+            "Owner",
+            "Member"
+        ),
+        async (c) => {
+
+            const currentUser =
+                c.get("user");
+
+
+            if (!currentUser) {
+                throw new AppError(
+                    401,
+                    "UNAUTHORIZED",
+                    "Unauthorized"
+                );
+            }
+
+
+            const id =
+                c.req.param("id");
+
+
+            if (
+                currentUser.role === "Member" &&
+                currentUser.id !== id
+            ) {
+                throw new AppError(
+                    403,
+                    "FORBIDDEN",
+                    "Cannot delete another user"
+                );
+            }
+
+
+            const deleted =
+                await removeUser({
+                    services: c.get("services"),
+                    id,
+                    deletedBy: currentUser.id,
+                });
+
+
+            return c.json({
+                message: "Deleted user",
+                id: deleted.id,
             });
-
-
-        return c.json(
-            users.map(user => ({
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                avatarId: user.avatarFileId,
-            }))
-        );
-    }
-)
+        }
+    )
 
 
 
-.get(
-    "/:id",
-    requireAuth,
-    requireRole(
-        "Admin",
-        "Owner"
-    ),
-    async (c) => {
+    .patch(
+        "/:id/role",
+        requireAuth,
+        requireRole(
+            "Admin",
+            "Owner"
+        ),
+        validateJson(
+            updateRoleSchema
+        ),
+        async (c) => {
 
-        const user =
-            await getUser({
-                services: c.get("services"),
-                id: c.req.param("id"),
+            const user =
+                c.get("user");
+
+
+            if (!user) {
+                throw new AppError(
+                    401,
+                    "UNAUTHORIZED",
+                    "Unauthorized"
+                );
+            }
+
+
+            const {
+                roleName
+            } =
+                await c.req.json();
+
+
+            const updated =
+                await updateUserRole({
+                    services: c.get("services"),
+                    userId: c.req.param("id"),
+                    roleName,
+                    updatedBy: user.id,
+                });
+
+
+            return c.json({
+                message: "Updated user role",
+                user: updated,
             });
-
-
-        if (!user) {
-            throw new AppError(
-                404,
-                "USER_NOT_FOUND",
-                "User not found"
-            );
         }
-
-
-        return c.json(user);
-    }
-)
+    )
 
 
 
-.delete(
-    "/:id",
-    requireAuth,
-    requireRole(
-        "Admin",
-        "Owner",
-        "Member"
-    ),
-    async (c) => {
+    .patch(
+        "/:id/password",
+        requireAuth,
+        requireRole(
+            "Admin",
+            "Owner",
+            "Member"
+        ),
+        validateJson(
+            updatePasswordSchema
+        ),
+        async (c) => {
 
-        const currentUser =
-            c.get("user");
-
-
-        if (!currentUser) {
-            throw new AppError(
-                401,
-                "UNAUTHORIZED",
-                "Unauthorized"
-            );
-        }
+            const currentUser =
+                c.get("user");
 
 
-        const id =
-            c.req.param("id");
+            if (!currentUser) {
+                throw new AppError(
+                    401,
+                    "UNAUTHORIZED",
+                    "Unauthorized"
+                );
+            }
 
 
-        if (
-            currentUser.role === "Member" &&
-            currentUser.id !== id
-        ) {
-            throw new AppError(
-                403,
-                "FORBIDDEN",
-                "Cannot delete another user"
-            );
-        }
-
-
-        const deleted =
-            await removeUser({
-                services: c.get("services"),
-                id,
-                deletedBy: currentUser.id,
-            });
-
-
-        return c.json({
-            message: "Deleted user",
-            id: deleted.id,
-        });
-    }
-)
-
-
-
-.patch(
-    "/:id/role",
-    requireAuth,
-    requireRole(
-        "Admin",
-        "Owner"
-    ),
-    validateJson(
-        updateRoleSchema
-    ),
-    async (c) => {
-
-        const user =
-            c.get("user");
-
-
-        if (!user) {
-            throw new AppError(
-                401,
-                "UNAUTHORIZED",
-                "Unauthorized"
-            );
-        }
-
-
-        const {
-            roleName
-        } =
-            await c.req.json();
-
-
-        const updated =
-            await updateUserRole({
-                services: c.get("services"),
-                userId: c.req.param("id"),
-                roleName,
-                updatedBy: user.id,
-            });
-
-
-        return c.json({
-            message: "Updated user role",
-            user: updated,
-        });
-    }
-)
-
-
-
-.patch(
-    "/:id/password",
-    requireAuth,
-    requireRole(
-        "Admin",
-        "Owner",
-        "Member"
-    ),
-    validateJson(
-        updatePasswordSchema
-    ),
-    async (c) => {
-
-        const currentUser =
-            c.get("user");
-
-
-        if (!currentUser) {
-            throw new AppError(
-                401,
-                "UNAUTHORIZED",
-                "Unauthorized"
-            );
-        }
-
-
-        const {
-            currentPassword,
-            newPassword,
-        } =
-            await c.req.json();
-
-
-        const updated =
-            await changeUserPassword({
-                services: c.get("services"),
-                user: currentUser,
-                userId: c.req.param("id"),
+            const {
                 currentPassword,
                 newPassword,
+            } =
+                await c.req.json();
+
+
+            const updated =
+                await changeUserPassword({
+                    services: c.get("services"),
+                    user: currentUser,
+                    userId: c.req.param("id"),
+                    currentPassword,
+                    newPassword,
+                });
+
+
+            return c.json({
+                message: "Updated password",
+                userId: updated?.id,
             });
-
-
-        return c.json({
-            message: "Updated password",
-            userId: updated?.id,
-        });
-    }
-)
-
-
-
-.patch(
-    "/avatar",
-    requireAuth,
-    async (c) => {
-
-        const user =
-            c.get("user");
-
-
-        if (!user) {
-            throw new AppError(
-                401,
-                "UNAUTHORIZED",
-                "Unauthorized"
-            );
         }
+    )
 
 
-        const body =
-            await c.req.parseBody();
+
+    .patch(
+        "/avatar",
+        requireAuth,
+        async (c) => {
+
+            const user =
+                c.get("user");
 
 
-        const file =
-            body.file;
+            if (!user) {
+                throw new AppError(
+                    401,
+                    "UNAUTHORIZED",
+                    "Unauthorized"
+                );
+            }
 
 
-        if (!(file instanceof File)) {
-            throw new AppError(
-                400,
-                "BAD_REQUEST",
-                "No file provided"
-            );
-        }
+            const body =
+                await c.req.parseBody();
 
 
-        const savedFile =
-            await updateAvatar({
-                services: c.get("services"),
-                user,
-                file,
+            const file =
+                body.file;
+
+
+            if (!(file instanceof File)) {
+                throw new AppError(
+                    400,
+                    "BAD_REQUEST",
+                    "No file provided"
+                );
+            }
+
+
+            const savedFile =
+                await updateAvatar({
+                    services: c.get("services"),
+                    user,
+                    file,
+                });
+
+
+            return c.json({
+                avatarFileId: savedFile.id,
             });
-
-
-        return c.json({
-            avatarFileId: savedFile.id,
-        });
-    }
-);
+        }
+    );
 
 
 export default usersRoutes;

@@ -12,8 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useProjectFileUpload } from "../../useProjectFileUpload";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useProject } from "../../context/ProjectContext";
+import { SelectUsersDialog } from "@/features/users/components/SelectUsersDialog";
+import { useInviteProjectMembers } from "../../useInviteProjectMembers";
 
 
 const statusRepository: Record<string, React.ReactNode> = {
@@ -24,7 +26,7 @@ const statusRepository: Record<string, React.ReactNode> = {
         </div>
     ),
     inactive: (
-         <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
             <WifiOff className="h-4 w-4 text-red-400" />
             Inactive
         </div>
@@ -36,10 +38,13 @@ export function ProjectHero() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [inviteMembersOpen, setInviteMembersOpen] = useState(false);
+
 
     const { project } = useProject();
 
     const upload = useProjectFileUpload();
+    const inviteMembers = useInviteProjectMembers();
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         console.log("File upload triggered");
@@ -57,6 +62,12 @@ export function ProjectHero() {
         }
     };
 
+    const handleInviteMembers = async (projectSlug: string, userIds: string[]) => {
+        await inviteMembers.mutate({
+            projectSlug,
+            userIds,
+        });
+    };
 
     return (
         <Card className="overflow-hidden p-0">
@@ -96,7 +107,7 @@ export function ProjectHero() {
                             Chat
                         </Button>
 
-                        <Button variant="secondary">
+                        <Button variant="secondary" onClick={() => setInviteMembersOpen(true)}>
                             <UserPlus className="mr-2 h-4 w-4" />
                             Invite
                         </Button>
@@ -131,7 +142,7 @@ export function ProjectHero() {
                                 {project.files.length} Files
                             </div>
 
-                          { statusRepository[project.status] }
+                            {statusRepository[project.status]}
                         </div>
 
                     </div>
@@ -139,6 +150,13 @@ export function ProjectHero() {
                 </div>
 
             </div>
+
+            <SelectUsersDialog
+                open={inviteMembersOpen}
+                onOpenChange={setInviteMembersOpen}
+                actionLabel="Invite Members"
+                onAction={(userIds) => handleInviteMembers(project.slug, userIds)}
+            />
 
         </Card>
     );

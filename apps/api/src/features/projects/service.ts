@@ -8,6 +8,7 @@ import {
     insertFile,
     findDuplicateFile,
     remove,
+    removeMember,
 } from "./repository";
 
 import {
@@ -23,6 +24,7 @@ import type { Db, ServicesContext } from "../../types";
 
 import { AppError } from "../../lib/errors";
 import { removeFile, uploadFile } from "../files/service";
+import { getUser } from "../users/service";
 
 
 
@@ -255,6 +257,57 @@ export async function uploadProjectFile(
     return uploaded;
 }
 
+export const inviteMembersToProject = async ({
+    services: { db, audit },
+    projectSlug,
+    userIds,
+    invitedByUserId,
+}: {
+    services: ServicesContext;
+    projectSlug: string;
+    userIds: string[];
+    invitedByUserId: string;
+}) => {
+
+    const project =
+        await findBySlug(
+            db,
+            projectSlug
+        );
+    
+    if (!project) {
+        throw new AppError(
+            404,
+            "NOT_FOUND",
+            "Project not found"
+        );
+    }
+
+    for (const userId of userIds) {
+
+        await insertMember(
+            db,
+            {
+                projectId: project.id,
+                userId,
+                role: "contributor",
+            }
+        );
+
+    }
+
+    await audit.create({
+        userId: invitedByUserId,
+        action:
+            AuditActions.PROJECT_MEMBERS_INVITED,
+        resourceType:
+            "project",
+        resourceId:
+            project.id,
+        description:
+            `Invited ${userIds.length} members to project ${project.slug}`,
+    });
+};
 
 
 export async function deleteProject(
@@ -323,3 +376,51 @@ export async function deleteProject(
             `Deleted project ${project.slug}`,
     });
 }
+
+export const deleteProjectMember = async ({
+    services: { db, audit, storage },
+    projectSlug,
+    userId,
+}: {
+    services: ServicesContext;
+    projectSlug: string;
+    userId: string;
+}) => {
+    const project =
+        await findBySlug(
+            db,
+            projectSlug
+        );
+
+    const user = await getUser({
+        services: { db, audit, storage },
+        id: userId,
+    });
+
+    if (!project) {
+        throw new AppError(
+            404,
+            "NOT_FOUND",
+            "Project not found"
+        );
+    }
+
+    await removeMember(
+        db,
+        project.id,
+        userId
+    );
+
+    await audit.create({
+        userId,
+        action:
+            AuditActions.PROJECT_MEMBER_REMOVED,
+        resourceType:
+            "project",  
+        
+        resourceId:
+            project.id,
+        description:
+            `Removed member ${user!.name} from project ${project.slug}`,
+    });
+};

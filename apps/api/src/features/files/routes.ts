@@ -4,8 +4,8 @@ import { requireRole } from "../../middleware/role";
 import { AppError } from "../../lib/errors";
 import { R2Storage } from "../../services/storage";
 import { AuditActions, auditLogger } from "../../services/auditLog";
-import { findFileById } from "./repository";
-import { downloadFile, removeFile, updateFile, uploadFile } from "./service";
+import { findFileById, getStorageUsage } from "./repository";
+import { downloadFile, getStorageMetrics, removeFile, updateFile, uploadFile } from "./service";
 import { Env } from "../../types";
 import { requireUser } from "../../lib/auth";
 
@@ -50,6 +50,22 @@ const fileRoutes = new Hono<Env>()
             return c.json({
                 id: savedFile.id,
             }, 201);
+        }
+    )
+
+    .get(
+        "/storage/usage",
+        requireAuth,
+        requireRole("Admin", "Owner", "Member"),
+        async (c) => {
+            const user = requireUser(c);
+
+            const metrics = await getStorageMetrics({
+                services: c.get("services"),
+                userId: user.id,
+            });
+
+            return c.json(metrics);
         }
     )
 

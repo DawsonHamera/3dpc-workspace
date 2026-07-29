@@ -1,6 +1,6 @@
 import { AppError } from "../../lib/errors";
 import type { ServicesContext } from "../../types";
-import { createFileRecord, deleteFileRecord, findFileById, updateFileRecord } from "./repository";
+import { createFileRecord, deleteFileRecord, findFileById, getStorageUsage, updateFileRecord } from "./repository";
 import { getFileCategory } from "./utils/fileCategory";
 import { sanitizeStorageFilename } from "./utils/filename";
 import { validateFile } from "./utils/validation";
@@ -192,5 +192,28 @@ export const downloadFile = async ({
     return {
         file,
         object,
+    };
+}
+
+export const getStorageMetrics = async ({
+    services: { db },
+    userId,
+}: {
+    services: ServicesContext;
+    userId: string;
+}) => {
+
+    const maxStorageLimit = 1024 * 1024 * 1024 * 5; // 5GB
+
+    const usage = await getStorageUsage(
+        db,
+        userId
+    );
+
+    return {
+        used: usage,
+        limit: maxStorageLimit,
+        remaining: maxStorageLimit - usage,
+        percentage: (usage / maxStorageLimit) * 100,
     };
 }

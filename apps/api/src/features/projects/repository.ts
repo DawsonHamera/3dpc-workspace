@@ -265,3 +265,24 @@ export const remove = async (
             )
         );
 };
+
+export const removeMember = async (
+    db: Db,
+    projectId: string,
+    userId: string
+) => {
+    await db
+        .delete(projectMembers)
+        .where(
+            and(
+                eq(
+                    projectMembers.projectId,
+                    projectId
+                ),
+                eq(
+                    projectMembers.userId,
+                    userId
+                )
+            )
+        );
+};

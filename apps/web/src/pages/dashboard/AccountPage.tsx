@@ -203,7 +203,7 @@ export const AccountPage = () => {
 
 
                                 <ItemDescription>
-                                    Dawson Smith
+                                    {user?.name || "N/A"}
                                 </ItemDescription>
 
                             </ItemContent>
@@ -238,7 +238,7 @@ export const AccountPage = () => {
 
 
                                 <ItemDescription>
-                                    user@example.com
+                                    {user?.email || "N/A"}
                                 </ItemDescription>
 
                             </ItemContent>

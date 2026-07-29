@@ -4,10 +4,6 @@ import { apiFetch } from "../apiFetch";
 
 export type UploadMetadata = Record<string, unknown>;
 
-export type UploadResponse = {
-    id: string;
-};
-
 type UploadArgs = {
     file: File;
     projectSlug: string;
@@ -22,7 +18,7 @@ export function useProjectFileUpload() {
             file,
             projectSlug,
             metadata,
-        }: UploadArgs): Promise<UploadResponse> => {
+        }: UploadArgs) => {
 
             const res = await api.projects[":projectSlug"].files.$post({
                 param: {
@@ -35,6 +31,10 @@ export function useProjectFileUpload() {
                         : undefined,
                 },
             });
+
+            if (!res.ok) {
+                throw new Error("File upload failed");
+            }
 
             return apiFetch(res);
         },
