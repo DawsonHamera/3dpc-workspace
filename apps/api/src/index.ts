@@ -13,6 +13,7 @@ import { projectRoutes } from "./features/projects/routes";
 import { ZodError } from "zod/v3";
 import { auditRoutes } from "./features/audit/route";
 import { serviceContext } from "./middleware/services";
+import { onshapeRoutes } from "./features/onshape/routes";
 
 const app = new Hono<Env>()
     .use(
@@ -32,6 +33,7 @@ const app = new Hono<Env>()
     .route("/files", fileRoutes)
     .route("/projects", projectRoutes)
     .route("/audit", auditRoutes)
+    .route("/onshape", onshapeRoutes)
     .get("/health", (c) => {
         return c.json({
             status: "ok"

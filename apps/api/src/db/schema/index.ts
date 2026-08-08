@@ -8,3 +8,5 @@ export * from "./project_members";
 export * from "./projects";
 export * from "./project_updates";
 export * from "./audit_logs";
+export * from "./onshape_connections";
+export * from "./onshape_oauth_states";

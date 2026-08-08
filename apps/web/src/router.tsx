@@ -33,6 +33,7 @@ import DevPage from "./pages/dashboard/DevPage";
 import LogsPage from "./pages/dashboard/LogsPage";
 import ManageUsersPage from "./pages/dashboard/ManageUsersPage";
 import MembershipPage from "./pages/dashboard/MembershipPages";
+import OnshapeTestPage from "./pages/dashboard/OnshapeTestPage";
 
 export const router = createBrowserRouter([
     {
@@ -127,6 +128,10 @@ export const router = createBrowserRouter([
                             {
                                 path: "manage/users",
                                 element: <ManageUsersPage />,
+                            },
+                            {
+                                path: "test-onshape",
+                                element: <OnshapeTestPage />,
                             }
                         ],
                     },

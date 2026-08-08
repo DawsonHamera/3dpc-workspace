@@ -21,6 +21,11 @@ export type ServicesContext = {
 
 export type Bindings = {
   FILES: R2Bucket;
+  ONSHAPE_CLIENT_ID: string;
+  ONSHAPE_CLIENT_SECRET: string;
+  ONSHAPE_REDIRECT_URI: string;
+  BCRYPT_ROUNDS: number;
+  FRONTEND_URL: string;
 };
 
 export type Variables = {
@@ -32,7 +37,6 @@ export type Variables = {
   };
   user: UserContext | null;
   projectMembership: string | null;
-  BCRYPT_ROUNDS: number;
 };
 
 export type Env = {

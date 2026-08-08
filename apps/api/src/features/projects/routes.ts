@@ -54,8 +54,6 @@ import { requireUser } from "../../lib/auth";
 
 export const projectRoutes = new Hono<Env>()
 
-
-
     .get(
         "/",
         requireAuth,
