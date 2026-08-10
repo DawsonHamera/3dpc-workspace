@@ -28,7 +28,7 @@ export function ProjectSettingsTab() {
     const handleDeleteProject = async () => {
         if (!project) return;
         
-        await deleteProject.mutateAsync({ id: project.id });
+        await deleteProject.mutateAsync({ slug: project.slug });
 
         navigate("/dashboard");
     }

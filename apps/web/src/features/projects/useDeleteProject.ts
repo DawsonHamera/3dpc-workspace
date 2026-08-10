@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../apiFetch";
 
 type DeleteProjectArgs = {
-    id: string;
+    slug: string;
 };
 
 export function useDeleteProject() {
@@ -11,11 +11,11 @@ export function useDeleteProject() {
 
     return useMutation({
         mutationFn: async ({
-            id,
+            slug,
         }: DeleteProjectArgs) => {
-            const res = await api.projects[":id"].$delete({
+            const res = await api.projects[":slug"].$delete({
                 param: {
-                    id,
+                    slug,
                 },
             });
 
@@ -29,11 +29,11 @@ export function useDeleteProject() {
             });
             // remove individual cache
             queryClient.removeQueries({
-                queryKey: ["projects", variables.id],
+                queryKey: ["projects", variables.slug],
             });
 
             queryClient.removeQueries({
-                queryKey: ["projects", variables.id, "files"],
+                queryKey: ["projects", variables.slug, "files"],
             });
         },
     });

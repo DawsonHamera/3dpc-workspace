@@ -40,8 +40,8 @@ const usersRoutes = new Hono<Env>()
         "/",
         requireAuth,
         requireRole(
-            "Admin",
-            "Owner"
+            "admin",
+            "owner"
         ),
         async (c) => {
 
@@ -67,9 +67,9 @@ const usersRoutes = new Hono<Env>()
         "/directory",
         requireAuth,
         requireRole(
-            "Admin",
-            "Owner",
-            "Member"
+            "admin",
+            "owner",
+            "member"
         ),
         async (c) => {
 
@@ -102,8 +102,8 @@ const usersRoutes = new Hono<Env>()
         "/:id",
         requireAuth,
         requireRole(
-            "Admin",
-            "Owner"
+            "admin",
+            "owner"
         ),
         async (c) => {
 
@@ -133,9 +133,9 @@ const usersRoutes = new Hono<Env>()
         "/:id",
         requireAuth,
         requireRole(
-            "Admin",
-            "Owner",
-            "Member"
+            "admin",
+            "owner",
+            "member"
         ),
         async (c) => {
 
@@ -189,8 +189,8 @@ const usersRoutes = new Hono<Env>()
         "/:id/role",
         requireAuth,
         requireRole(
-            "Admin",
-            "Owner"
+            "admin",
+            "owner",
         ),
         validateJson(
             updateRoleSchema
@@ -238,9 +238,9 @@ const usersRoutes = new Hono<Env>()
         "/:id/password",
         requireAuth,
         requireRole(
-            "Admin",
-            "Owner",
-            "Member"
+            "admin",
+            "owner",
+            "member"
         ),
         validateJson(
             updatePasswordSchema

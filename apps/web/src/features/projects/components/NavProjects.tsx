@@ -38,16 +38,16 @@ export function NavProjects({ projects, isLoading }: NavProjectsProps) {
   const [revealedProjects, setRevealedProjects] = useState(5);
   const [deleteQuery, setDeleteQuery] = useState({
     open: false,
-    projectId: "",
+    slug: "",
   });
 
   const navigate = useNavigate();
 
   const deleteProject = useDeleteProject();
 
-  const handleDeleteProject = async (id: string) => {
+  const handleDeleteProject = async (slug: string) => {
     await deleteProject.mutate(
-      { id },
+      { slug },
     );
   }
 
@@ -93,7 +93,7 @@ export function NavProjects({ projects, isLoading }: NavProjectsProps) {
                   <span>Share Project</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onClick={() => setDeleteQuery({ open: true, projectId: item.id })}>
+                <DropdownMenuItem variant="destructive" onClick={() => setDeleteQuery({ open: true, slug: item.slug })}>
                     <Trash2Icon
                     />
                     <span>Delete Project</span>
@@ -127,7 +127,7 @@ export function NavProjects({ projects, isLoading }: NavProjectsProps) {
         open={deleteQuery.open}
         onOpenChange={(open) => setDeleteQuery({ ...deleteQuery, open })}
         onConfirm={() => {
-          handleDeleteProject(deleteQuery.projectId);
+          handleDeleteProject(deleteQuery.slug);
           setDeleteQuery({ ...deleteQuery, open: false });
         }}
       />

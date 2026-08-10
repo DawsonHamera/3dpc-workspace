@@ -6,6 +6,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { users } from "./users";
+import { relations } from "drizzle-orm/relations";
 
 
 export const sessions = pgTable("sessions", {
@@ -42,3 +43,14 @@ export const sessions = pgTable("sessions", {
     .defaultNow()
     .notNull(),
 });
+
+
+export const sessionsRelations = relations(
+  sessions,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [sessions.userId],
+      references: [users.id],
+    }),
+  })
+);

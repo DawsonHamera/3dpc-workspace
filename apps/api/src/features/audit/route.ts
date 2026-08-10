@@ -9,7 +9,7 @@ export const auditRoutes = new Hono<Env>()
     .get(
         "/",
         requireAuth,
-        requireRole("Owner", "Admin"),
+        requireRole("owner", "admin"),
         async (c) => {
             const db = c.get("db");
             const limitParam = c.req.query("limit");

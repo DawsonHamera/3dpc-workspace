@@ -3,13 +3,13 @@ import { api } from "@/api/client";
 import { apiFetch } from "../apiFetch";
 
 
-export function useProjectBySlug(projectSlug: string) {
+export function useProjectBySlug(slug: string) {
     return useQuery({
-        queryKey: ["projects", projectSlug],
+        queryKey: ["projects", slug],
 
         queryFn: async () => {
-            const res = await api.projects[":projectSlug"].$get({
-                param: { projectSlug }
+            const res = await api.projects[":slug"].$get({
+                param: { slug }
             });
 
             return apiFetch(res);
@@ -22,6 +22,8 @@ export function useProjectBySlug(projectSlug: string) {
 export type ProjectExtended = NonNullable<
   NonNullable<ReturnType<typeof useProjectBySlug>["data"]>
 >;
+
+// export type 
 
 export type ProjectMember = NonNullable<
   NonNullable<ReturnType<typeof useProjectBySlug>["data"]>["members"][0]

@@ -7,7 +7,7 @@ export const requireProjectMembership = (...allowedMembershipRoles: string[]) =>
         const db = c.get("db");
         const user = c.get("user");
 
-        const slug = c.req.param("projectSlug");
+        const slug = c.req.param("slug");
         const id = c.req.param("id");
 
         if (!user) {
@@ -60,8 +60,8 @@ export const requireProjectMembership = (...allowedMembershipRoles: string[]) =>
         });
 
         const isGlobalAdmin =
-            user.role === "Admin" ||
-            user.role === "Owner";
+            user.role === "admin" ||
+            user.role === "owner";
 
         const hasMembershipAccess =
             !!membership &&

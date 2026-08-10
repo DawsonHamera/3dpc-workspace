@@ -9,7 +9,9 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { roles } from "./roles";
-import { files } from "./files";
+import { files } from "../files";
+import { sessions } from "./sessions";
+import { relations } from "drizzle-orm/relations";
 
 
 export const users = pgTable("users", {
@@ -44,5 +46,23 @@ export const users = pgTable("users", {
     .notNull()
     .defaultNow(),
 });
+
+export const usersRelations = relations(
+  users,
+  ({ one, many }) => ({
+    role: one(roles, {
+      fields: [users.roleId],
+      references: [roles.id],
+    }),
+
+    sessions: many(sessions),
+
+    avatar: one(files, {
+      fields: [users.avatarFileId],
+      references: [files.id],
+    }),
+  })
+);
+
 
 export type User = typeof users.$inferSelect;

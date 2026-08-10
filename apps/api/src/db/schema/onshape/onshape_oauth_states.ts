@@ -1,5 +1,5 @@
 import { pgTable, text, uuid, timestamp } from "drizzle-orm/pg-core";
-import { users } from "./users";
+import { users } from "../users/users";
 
 export const onshapeOAuthStates = pgTable(
     "onshape_oauth_states",

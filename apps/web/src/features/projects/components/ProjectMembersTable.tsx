@@ -88,7 +88,7 @@ function getColumns(
                     }
                     onConfirm={() => {
                         deleteMember({
-                            projectSlug,
+                            slug: projectSlug,
                             userId: member.user.id,
                         });
                         setOpen(false);

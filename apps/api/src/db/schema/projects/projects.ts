@@ -5,10 +5,9 @@ import {
     timestamp,
     uuid,
 } from "drizzle-orm/pg-core";
-import { projectFiles } from "./project_files";
 import { relations } from "drizzle-orm/relations";
 import { projectMembers } from "./project_members";
-import { User } from "./users";
+import { projectResources } from "./project_resources";
 
 export const projects = pgTable("projects", {
     id: uuid("id")
@@ -52,7 +51,7 @@ export const projectsRelations = relations(
     ({ many }) => ({
         members: many(projectMembers),
 
-        files: many(projectFiles),
+        resources: many(projectResources),
     })
 );
 

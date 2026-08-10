@@ -14,7 +14,7 @@ const fileRoutes = new Hono<Env>()
     .post(
         "/upload",
         requireAuth,
-        requireRole("Admin", "Owner", "Member"),
+        requireRole("admin", "owner", "member"),
         async (c) => {
 
             const body = await c.req.parseBody();
@@ -56,7 +56,7 @@ const fileRoutes = new Hono<Env>()
     .get(
         "/storage/usage",
         requireAuth,
-        requireRole("Admin", "Owner", "Member"),
+        requireRole("admin", "owner", "member"),
         async (c) => {
             const user = requireUser(c);
 
@@ -72,7 +72,7 @@ const fileRoutes = new Hono<Env>()
     .patch(
         "/:id",
         requireAuth,
-        requireRole("Admin", "Owner", "Member"),
+        requireRole("admin", "owner", "member"),
         async (c) => {
             const body = await c.req.parseBody();
 
@@ -107,10 +107,10 @@ const fileRoutes = new Hono<Env>()
         "/:id/download",
         requireAuth,
         requireRole(
-            "Admin",
-            "Owner",
-            "Member",
-            "Guest"
+            "admin",
+            "owner",
+            "member",
+            "guest"
         ),
         async (c) => {
 
@@ -169,7 +169,7 @@ const fileRoutes = new Hono<Env>()
     .delete(
         "/:id",
         requireAuth,
-        requireRole("Admin", "Owner", "Member"),
+        requireRole("admin", "owner", "member"),
         async (c) => {
 
             const user = requireUser(c);

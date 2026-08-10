@@ -5,8 +5,6 @@ import {
     findPublic,
     insert,
     insertMember,
-    insertFile,
-    findDuplicateFile,
     remove,
     removeMember,
 } from "./repository";
@@ -49,12 +47,12 @@ export async function getPublicProjects(
 
 
 export async function getProjectBySlug(
-    db: Db,
+    services: ServicesContext,
     slug: string
 ) {
     const project =
         await findBySlug(
-            db,
+            services.db,
             slug
         );
 
@@ -66,20 +64,24 @@ export async function getProjectBySlug(
     return {
         ...project,
 
-        files: project.files
-            .filter(
-                ({ file }) =>
-                    !file.isTemplate
-            ).map(
-                ({ file }) => ({
-                    id: file.id,
-                    originalName: file.originalName,
-                    type: file.type,
-                    size: file.size,
-                    createdAt: file.createdAt,
-                })
+        // files: project.files
+        //     .filter(
+        //         ({ file }) =>
+        //             !file.isTemplate
+        //     ).map(
+        //         ({ file }) => ({
+        //             id: file.id,
+        //             originalName: file.originalName,
+        //             type: file.type,
+        //             size: file.size,
+        //             createdAt: file.createdAt,
+        //         })
 
-            ),
+        //     ),
+
+        resources: project.resources.map(
+            resource => resource.resource
+        ),
 
         members: project.members.map(
             member => ({
@@ -158,104 +160,104 @@ export async function createProject(
 
 
 
-export async function uploadProjectFile(
-    {
-        db,
-        storage,
-        userId,
-        projectSlug,
-        file,
-    }: {
-        db: Db;
-        storage: R2Storage;
-        userId: string;
-        projectSlug: string;
-        file: File;
-    }
-) {
+// export async function uploadProjectFile(
+//     {
+//         db,
+//         storage,
+//         userId,
+//         projectSlug,
+//         file,
+//     }: {
+//         db: Db;
+//         storage: R2Storage;
+//         userId: string;
+//         projectSlug: string;
+//         file: File;
+//     }
+// ) {
 
-    const project =
-        await findBySlug(
-            db,
-            projectSlug
-        );
-
-
-    if (!project) {
-        throw new AppError(
-            404,
-            "NOT_FOUND",
-            "Project not found"
-        );
-    }
-
-1
-
-    const duplicate =
-        await findDuplicateFile(
-            db,
-            project.id,
-            file.name
-        );
-
-    if (duplicate) {
-        throw new AppError(
-            400,
-            "BAD_REQUEST",
-            "A file with that name already exists in this project."
-        );
-    }
+//     const project =
+//         await findBySlug(
+//             db,
+//             projectSlug
+//         );
 
 
+//     if (!project) {
+//         throw new AppError(
+//             404,
+//             "NOT_FOUND",
+//             "Project not found"
+//         );
+//     }
 
-    const uploaded =
-        await uploadFile({
-            services: { db, storage, audit: auditLogger(db) },
-            file,
+// 1
 
-            uploadedBy: userId,
+//     const duplicate =
+//         await findDuplicateFile(
+//             db,
+//             project.id,
+//             file.name
+//         );
 
-            options: {
-                location: "projects",
-            },
-        });
+//     if (duplicate) {
+//         throw new AppError(
+//             400,
+//             "BAD_REQUEST",
+//             "A file with that name already exists in this project."
+//         );
+//     }
 
 
 
-    await insertFile(
-        db,
-        {
-            projectId: project.id,
-            fileId: uploaded.id,
-        }
-    );
+//     const uploaded =
+//         await uploadFile({
+//             services: { db, storage, audit: auditLogger(db) },
+//             file,
+
+//             uploadedBy: userId,
+
+//             options: {
+//                 location: "projects",
+//             },
+//         });
 
 
 
-    const audit =
-        auditLogger(db);
-
-
-    await audit.create({
-        userId,
-
-        action:
-            AuditActions.PROJECT_FILE_UPLOADED,
-
-        resourceType:
-            "file",
-
-        resourceId:
-            uploaded.id,
-
-        description:
-            `Uploaded file ${uploaded.originalName} to project ${project.slug}`,
-    });
+//     await insertFile(
+//         db,
+//         {
+//             projectId: project.id,
+//             fileId: uploaded.id,
+//         }
+//     );
 
 
 
-    return uploaded;
-}
+//     const audit =
+//         auditLogger(db);
+
+
+//     await audit.create({
+//         userId,
+
+//         action:
+//             AuditActions.PROJECT_FILE_UPLOADED,
+
+//         resourceType:
+//             "file",
+
+//         resourceId:
+//             uploaded.id,
+
+//         description:
+//             `Uploaded file ${uploaded.originalName} to project ${project.slug}`,
+//     });
+
+
+
+//     return uploaded;
+// }
 
 export const inviteMembersToProject = async ({
     services: { db, audit },
@@ -313,19 +315,19 @@ export const inviteMembersToProject = async ({
 export async function deleteProject(
     {
         services: { db, storage, audit },
-        id,
+        slug,
         userId,
     }: {
         services: ServicesContext;
-        id: string;
+        slug: string;
         userId: string;
     }
 ) {
 
     const project =
-        await findById(
+        await findBySlug(
             db,
-            id
+            slug
         );
 
 
@@ -339,24 +341,24 @@ export async function deleteProject(
 
 
 
-    // remove files first because project_files
-    // and storage need cleanup
-    for (const projectFile of project.files) {
+    // // remove files first because project_files
+    // // and storage need cleanup
+    // for (const projectFile of project.files) {
 
-        await removeFile(
-            {
-                services: { db, storage, audit },
-                userId,
-                id: projectFile.file.id
-            }
-        );
-    }
+    //     await removeFile(
+    //         {
+    //             services: { db, storage, audit },
+    //             userId,
+    //             id: projectFile.file.id
+    //         }
+    //     );
+    // }
 
 
 
     await remove(
         db,
-        id
+        slug
     );
 
 
@@ -370,10 +372,10 @@ export async function deleteProject(
             "project",
 
         resourceId:
-            id,
+            project.id,
 
         description:
-            `Deleted project ${project.slug}`,
+            `Deleted project ${slug}`,
     });
 }
 

@@ -8,7 +8,9 @@ import {
     jsonb,
     boolean,
 } from "drizzle-orm/pg-core";
-import { users } from "./users";
+import { users } from "./users/users";
+import { roles } from "./users/roles";
+import { relations } from "drizzle-orm/relations";
 
 
 export const fileTypeEnum = pgEnum("file_type", [
@@ -69,3 +71,10 @@ export const files = pgTable("files", {
         .notNull(),
 
 });
+
+export const rolesRelations = relations(
+  roles,
+  ({ many }) => ({
+    users: many(users),
+  })
+);

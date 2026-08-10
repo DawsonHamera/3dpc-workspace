@@ -3,6 +3,7 @@ import { createSessionToken, hashToken } from "../../lib/crypto";
 import type { Db } from "../../types";
 import { sessions, users } from "../../db/schema";
 import { AppError } from "../../lib/errors";
+import { hashPassword, verifyPassword } from "../../services/password";
 
 export const createSession = async (
   db: Db,
@@ -66,11 +67,11 @@ export const verifyUser = async (
     where: eq(users.email, email),
   });
 
-  if (!user) {
+  if (!user || !user.passwordHash) {
     return null;
   }
 
-  const isMatch = await hashToken(password) === user.passwordHash;
+  const isMatch = await verifyPassword(password, user.passwordHash);
 
   if (!isMatch) {
     return null;
@@ -101,7 +102,7 @@ export const registerUser = async (
     );
   }
 
-  const passwordHash = await hashToken(data.password);
+  const passwordHash = await hashPassword(data.password);
 
   const result = await db.insert(users).values({
     email: data.email,

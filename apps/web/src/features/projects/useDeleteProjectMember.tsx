@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../apiFetch";
 
 type DeleteProjectMemberArgs = {
-    projectSlug: string;
+    slug: string;
     userId: string;
 };
 
@@ -12,12 +12,12 @@ export function useDeleteProjectMember() {
 
     return useMutation({
         mutationFn: async ({
-            projectSlug,
+            slug,
             userId,
         }: DeleteProjectMemberArgs) => {
-            const res = await api.projects[":projectSlug"].members[":userId"].$delete({
+            const res = await api.projects[":slug"].members[":userId"].$delete({
                 param: {
-                    projectSlug,
+                    slug,
                     userId,
                 },
             });
@@ -29,7 +29,7 @@ export function useDeleteProjectMember() {
             queryClient.invalidateQueries({
                 queryKey: [
                     "projects",
-                    variables.projectSlug,
+                    variables.slug,
                 ],
             });
         },

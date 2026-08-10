@@ -139,7 +139,7 @@ export function ProjectHero() {
 
                             <div className="flex items-center gap-2">
                                 <FileText className="h-4 w-4" />
-                                {project.files.length} Files
+                                {project.resources.length} Resources
                             </div>
 
                             {statusRepository[project.status]}

@@ -15,13 +15,14 @@ export const findOnshapeConnectionByUserId = async (
     db: Db,
     userId: string
 ) => {
-
-    return db.query.onshapeConnections.findFirst({
+    const connection = await db.query.onshapeConnections.findFirst({
         where: eq(
             onshapeConnections.userId,
             userId
         ),
     });
+
+    return connection;
 };
 
 
@@ -131,4 +132,46 @@ export const deleteOnshapeOAuthState = async (
                 state
             )
         );
+};
+
+export const updateOnshapeConnectionTokens = async (
+    db: Db,
+    connectionId: string,
+    data: {
+        accessToken: string;
+        refreshToken: string | null;
+        expiresAt: Date | null;
+    }
+) => {
+
+    await db
+        .update(onshapeConnections)
+        .set({
+            accessToken:
+                data.accessToken,
+
+            refreshToken:
+                data.refreshToken,
+
+            expiresAt:
+                data.expiresAt,
+
+            updatedAt:
+                new Date(),
+        })
+        .where(
+            eq(
+                onshapeConnections.id,
+                connectionId
+            )
+        );
+
+
+    return db.query.onshapeConnections.findFirst({
+        where:
+            eq(
+                onshapeConnections.id,
+                connectionId
+            ),
+    });
 };

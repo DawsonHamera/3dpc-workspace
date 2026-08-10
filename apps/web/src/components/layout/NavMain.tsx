@@ -90,8 +90,8 @@ function SidebarCollapsibleItem({
         item.items?.filter(
             sub =>
                 !sub.adminOnly ||
-                role === "Admin" ||
-                role === "Owner"
+                role === "admin" ||
+                role === "owner"
         );
 
 
@@ -189,8 +189,8 @@ export function NavMain({
         items.filter(
             item =>
                 !item.adminOnly ||
-                role === "Admin" ||
-                role === "Owner"
+                role === "admin" ||
+                role === "owner"
         );
 
 

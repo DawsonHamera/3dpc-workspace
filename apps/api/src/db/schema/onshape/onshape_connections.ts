@@ -5,7 +5,7 @@ import {
     unique,
     uuid,
 } from "drizzle-orm/pg-core";
-import { users } from "./users";
+import { users } from "../users/users";
 
 export const onshapeConnections = pgTable("onshape_connections", {
     id: uuid("id").defaultRandom().primaryKey(),

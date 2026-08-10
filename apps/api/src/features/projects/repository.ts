@@ -7,7 +7,6 @@ import {
 
 import {
     files,
-    projectFiles,
     projectMembers,
     projects,
 } from "../../db/schema";
@@ -16,9 +15,14 @@ import type { Db } from "../../types";
 
 
 const projectWithRelations = {
-    files: {
+    resources: {
         with: {
-            file: true,
+            resource: {
+                with: {
+                    onshape: true,
+                    file: true,
+                },
+            },
         },
     },
 
@@ -74,7 +78,6 @@ export const findForUser = async (
     db: Db,
     userId: string
 ) => {
-
     const result = await db
         .select({
             project: projects,
@@ -196,72 +199,72 @@ export const insertMember = async (
 
 
 
-export const insertFile = async (
-    db: Db,
-    data: InferInsertModel<typeof projectFiles>
-) => {
+// export const insertFile = async (
+//     db: Db,
+//     data: InferInsertModel<typeof projectFiles>
+// ) => {
 
-    await db
-        .insert(projectFiles)
-        .values(data);
-};
-
-
-
-export const findDuplicateFile = async (
-    db: Db,
-    projectId: string,
-    filename: string
-) => {
-
-    const result = await db
-        .select({
-            id: files.id,
-        })
-
-        .from(projectFiles)
-
-        .innerJoin(
-            files,
-            eq(
-                projectFiles.fileId,
-                files.id
-            )
-        )
-
-        .where(
-            and(
-                eq(
-                    projectFiles.projectId,
-                    projectId
-                ),
-
-                eq(
-                    files.originalName,
-                    filename
-                )
-            )
-        )
-
-        .limit(1);
+//     await db
+//         .insert(projectFiles)
+//         .values(data);
+// };
 
 
-    return result[0] ?? null;
-};
+
+// export const findDuplicateFile = async (
+//     db: Db,
+//     projectId: string,
+//     filename: string
+// ) => {
+
+//     const result = await db
+//         .select({
+//             id: files.id,
+//         })
+
+//         .from(projectFiles)
+
+//         .innerJoin(
+//             files,
+//             eq(
+//                 projectFiles.fileId,
+//                 files.id
+//             )
+//         )
+
+//         .where(
+//             and(
+//                 eq(
+//                     projectFiles.projectId,
+//                     projectId
+//                 ),
+
+//                 eq(
+//                     files.originalName,
+//                     filename
+//                 )
+//             )
+//         )
+
+//         .limit(1);
+
+
+//     return result[0] ?? null;
+// };
 
 
 
 export const remove = async (
     db: Db,
-    id: string
+    slug: string
 ) => {
 
     await db
         .delete(projects)
         .where(
             eq(
-                projects.id,
-                id
+                projects.slug,
+                slug
             )
         );
 };

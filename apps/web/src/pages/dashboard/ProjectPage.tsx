@@ -19,7 +19,7 @@ import {
 } from "@/features/projects/components/project/ProjectLayout";
 
 import { ProjectOverviewTab } from "@/features/projects/components/project/ProjectOverviewTab";
-import { ProjectFilesTab } from "@/features/projects/components/project/ProjectFilesTab";
+import { ProjectResourcesTab } from "@/features/projects/components/project/ProjectResourcesTab";
 import { ProjectMembersTab } from "@/features/projects/components/project/ProjectMembersTab";
 import { ProjectActivityTab } from "@/features/projects/components/project/ProjectActivityTab";
 import { ProjectChatTab } from "@/features/projects/components/project/ProjectChatTab";
@@ -63,11 +63,11 @@ export const ProjectPage = () => {
             ),
         },
         {
-            value: "files",
-            label: "Files",
+            value: "resources",
+            label: "Resources",
             icon: <FileText className="h-4 w-4" />,
             content: (
-                <ProjectFilesTab
+                <ProjectResourcesTab
                     project={project}
                 />
             ),

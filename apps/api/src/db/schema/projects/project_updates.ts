@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { projects } from "./projects";
-import { users } from "./users";
+import { users } from "../users/users";
 import { relations } from "drizzle-orm/relations";
 
 export const projectUpdates = pgTable("project_updates", {

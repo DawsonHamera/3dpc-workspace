@@ -71,10 +71,10 @@ import { handleMutationError } from "@/lib/forms/handleMutationError";
 
 
 const roles = [
-    "Guest",
-    "Member",
-    "Admin",
-    "Owner",
+    "guest",
+    "member",
+    "admin",
+    "owner",
 ];
 
 

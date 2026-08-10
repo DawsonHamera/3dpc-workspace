@@ -191,8 +191,8 @@ export const changeUserPassword = async ({
 
 
     const isAdmin =
-        user.role === "Admin" ||
-        user.role === "Owner";
+        user.role === "admin" ||
+        user.role === "owner";
 
 
     if(!isAdmin){

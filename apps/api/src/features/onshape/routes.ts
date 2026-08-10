@@ -17,6 +17,7 @@ import {
     getConnection,
     getOnshapeUser,
     saveConnection,
+    getOnshapeDocuments,
 } from "./service";
 import { Env } from "../../types";
 
@@ -219,5 +220,42 @@ export const onshapeRoutes = new Hono<Env>()
                 message:
                     "Disconnected Onshape",
             });
+        }
+    )
+
+    .get(
+        "/documents",
+        requireAuth,
+        async (c) => {
+
+            const user =
+                c.get("user");
+
+
+            if (!user) {
+                throw new AppError(
+                    401,
+                    "UNAUTHORIZED",
+                    "Unauthorized"
+                );
+            }
+
+
+            const documents =
+                await getOnshapeDocuments({
+                    services:
+                        c.get("services"),
+
+                    env:
+                        c.env,
+
+                    userId:
+                        user.id,
+                });
+
+
+            return c.json(
+                documents
+            );
         }
     );
