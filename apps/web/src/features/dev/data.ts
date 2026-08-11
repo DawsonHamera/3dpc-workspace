@@ -5,20 +5,18 @@ export type DevFeature = {
     status: "complete" | "in-progress" | "planned";
 };
 
-
 export type DevLogEntry = {
     title: string;
     description: string;
     date: string;
 };
 
-
 export const devFeatures: DevFeature[] = [
     {
         title: "React + Hono Platform Migration",
         description:
             "Migrated the application to a modern React frontend with a Hono API backend, Cloudflare Workers, and Neon database infrastructure.",
-        date: " July 13, 2026",
+        date: "July 13, 2026",
         status: "complete",
     },
 
@@ -26,7 +24,7 @@ export const devFeatures: DevFeature[] = [
         title: "Authentication System",
         description:
             "Implemented user registration, login, protected routes, sessions, profiles, and role-based access.",
-        date: " July 15, 2026",
+        date: "July 15, 2026",
         status: "complete",
     },
 
@@ -41,11 +39,10 @@ export const devFeatures: DevFeature[] = [
     {
         title: "Project Management System",
         description:
-            "Created projects with members, visibility settings, project pages, and project-specific resources.",
+            "Created project workspaces with members, visibility settings, project pages, project-specific resources, and member management.",
         date: "July 22, 2026",
-        status: "in-progress",
+        status: "complete",
     },
-
 
     {
         title: "File Editor & Viewer",
@@ -63,15 +60,47 @@ export const devFeatures: DevFeature[] = [
         status: "in-progress",
     },
 
-    // Future Features
+    {
+        title: "3D Model Preview System",
+        description:
+            "Added browser-based previews for supported 3D files, allowing members to inspect models directly within project workspaces.",
+        date: "July 25, 2026",
+        status: "complete",
+    },
+
+    {
+        title: "Project Resource System",
+        description:
+            "Built a unified project resource system for managing files and external resources within project workspaces, including list and grid views.",
+        date: "August 2026",
+        status: "complete",
+    },
+
     {
         title: "Onshape Integration",
         description:
-            "Connect project workflows with Onshape to make CAD collaboration easier by linking designs, references, and project resources.",
-        date: "Future",
-        status: "planned",
+            "Integrated Onshape with project resources, allowing members to connect their Onshape account and add Onshape documents directly to project workspaces.",
+        date: "August 2026",
+        status: "complete",
     },
 
+    {
+        title: "Onshape Resource Thumbnails",
+        description:
+            "Added Onshape document thumbnails to project resources with API-side retrieval and graceful fallback behavior when thumbnails cannot be loaded.",
+        date: "August 2026",
+        status: "complete",
+    },
+
+    {
+        title: "Project Resource Management",
+        description:
+            "Added resource actions, deletion handling, duplicate resource detection, resource refreshing, and project-specific resource management.",
+        date: "August 2026",
+        status: "complete",
+    },
+
+    // Future Features
     {
         title: "Realtime Club Chat",
         description:
@@ -83,7 +112,7 @@ export const devFeatures: DevFeature[] = [
     {
         title: "Project Collaboration Tools",
         description:
-            "Expand projects with better teamwork features including updates, activity feeds, task tracking, and shared resources.",
+            "Expand projects with activity feeds, task tracking, project updates, and additional collaboration tools.",
         date: "Future",
         status: "planned",
     },
@@ -94,14 +123,6 @@ export const devFeatures: DevFeature[] = [
             "Create a notification system for meetings, announcements, project updates, and important club events.",
         date: "Future",
         status: "planned",
-    },
-
-    {
-        title: "3D Model Preview System",
-        description:
-            "Add browser-based previews for 3D files, allowing members to inspect models without downloading them.",
-        date: "Future",
-        status: "complete",
     },
 
     {
@@ -127,6 +148,7 @@ export const devFeatures: DevFeature[] = [
         date: "Future",
         status: "planned",
     },
+
     {
         title: "Club Events System",
         description:
@@ -135,7 +157,6 @@ export const devFeatures: DevFeature[] = [
         status: "planned",
     },
 ];
-
 
 export const devLog: DevLogEntry[] = [
     {
@@ -179,24 +200,28 @@ export const devLog: DevLogEntry[] = [
             "Updated dashboard navigation with a cleaner structure and improved organization of projects, resources, and club management tools.",
         date: "July 24, 2026",
     },
+
     {
         title: "Added 3D Model Previews",
         description:
-            "Added 3D model previews to projects, allowing users to view and interact with 3D models directly in the browser.",
+            "Added 3D model previews to projects, allowing users to view and interact with supported 3D models directly in the browser.",
         date: "July 25, 2026",
     },
+
     {
-        title: "Added theme toggle",
+        title: "Added Theme Toggle",
         description:
             "Added a theme toggle to the dashboard, allowing users to switch between light and dark modes.",
         date: "July 26, 2026",
     },
+
     {
         title: "Improved Project Workspace Layout",
         description:
-            "Updated project pages with a featured header, improved organization, and a more scalable tab-based structure for future project features.",
+            "Updated project pages with a featured header, improved organization, and a scalable tab-based structure for future project features.",
         date: "July 27, 2026",
     },
+
     {
         title: "Added Project Member Invites",
         description:
@@ -204,4 +229,38 @@ export const devLog: DevLogEntry[] = [
         date: "July 28, 2026",
     },
 
+    {
+        title: "Added Project Resource Explorer",
+        description:
+            "Introduced a dedicated resource explorer with searchable resources, list and grid views, resource actions, and project-specific resource management.",
+        date: "August 2026",
+    },
+
+    {
+        title: "Added Onshape Account Connections",
+        description:
+            "Added OAuth-based Onshape account connections, allowing users to connect and manage their Onshape account from account settings.",
+        date: "August 2026",
+    },
+
+    {
+        title: "Added Onshape Project Resources",
+        description:
+            "Added support for attaching Onshape documents to projects as resources and opening linked documents directly from the project workspace.",
+        date: "August 2026",
+    },
+
+    {
+        title: "Added Onshape Document Thumbnails",
+        description:
+            "Added Onshape document thumbnails to resource cards and list items with loading states and fallback icons when thumbnails are unavailable.",
+        date: "August 2026",
+    },
+
+    {
+        title: "Improved Resource Management",
+        description:
+            "Added resource deletion, duplicate detection, refresh controls, and reusable resource mutation handling across resource types.",
+        date: "August 2026",
+    },
 ];
