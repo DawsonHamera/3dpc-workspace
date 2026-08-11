@@ -33,6 +33,8 @@ export const AuditActions = {
     MEMBER_ADDED: "MEMBER_ADDED",
     USER_REMOVED: "USER_REMOVED",
     USER_UPDATED: "USER_UPDATED",
+
+    ONSHAPE_CONNECT_INITIATED: "ONSHAPE_CONNECT_INITIATED",
 } as const;
 
 export async function createAuditLog(

@@ -23,6 +23,8 @@ import {
 } from "./service";
 import { Env } from "../../types";
 import { onshapeRequest } from "./client";
+import { requireUser } from "../../lib/auth";
+import { AuditActions } from "../../services/auditLog";
 
 
 
@@ -34,18 +36,10 @@ export const onshapeRoutes = new Hono<Env>()
 
         async (c) => {
 
-            const user =
-                c.get("user");
+            const user = requireUser(c);
 
-
-            if (!user) {
-                throw new AppError(
-                    401,
-                    "UNAUTHORIZED",
-                    "Unauthorized"
-                );
-            }
-
+            const services =
+                c.get("services");
 
             const state =
                 await createOAuthState({
@@ -62,6 +56,14 @@ export const onshapeRoutes = new Hono<Env>()
                     env: c.env,
                     state,
                 });
+
+
+            await services.audit.create({
+                userId: user.id,
+                action: AuditActions.ONSHAPE_CONNECT_INITIATED,
+                resourceType: "user",
+                resourceId: user.id,
+            });
 
 
             return c.redirect(
@@ -164,17 +166,7 @@ export const onshapeRoutes = new Hono<Env>()
         async (c) => {
 
             const user =
-                c.get("user");
-
-
-            if (!user) {
-                throw new AppError(
-                    401,
-                    "UNAUTHORIZED",
-                    "Unauthorized"
-                );
-            }
-
+                requireUser(c);
 
             const connection =
                 await getConnection({
@@ -200,15 +192,7 @@ export const onshapeRoutes = new Hono<Env>()
         requireAuth,
         async (c) => {
             const user =
-                c.get("user");
-
-            if (!user) {
-                throw new AppError(
-                    401,
-                    "UNAUTHORIZED",
-                    "Unauthorized"
-                );
-            }
+                requireUser(c);
 
             await disconnect({
                 services:
@@ -232,17 +216,7 @@ export const onshapeRoutes = new Hono<Env>()
         async (c) => {
 
             const user =
-                c.get("user");
-
-
-            if (!user) {
-                throw new AppError(
-                    401,
-                    "UNAUTHORIZED",
-                    "Unauthorized"
-                );
-            }
-
+                requireUser(c);
 
             const documents =
                 await getOnshapeDocuments({
@@ -267,15 +241,7 @@ export const onshapeRoutes = new Hono<Env>()
         "/documents/:documentId/thumbnail",
         requireAuth,
         async (c) => {
-            const user = c.get("user");
-
-            if (!user) {
-                throw new AppError(
-                    401,
-                    "UNAUTHORIZED",
-                    "Unauthorized",
-                );
-            }
+            const user = requireUser(c);
 
             const document =
                 await getOnshapeDocument({

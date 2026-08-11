@@ -17,14 +17,6 @@ export function ProjectResourcesTab({ project }: Props) {
         return <Spinner className="mx-auto my-8" />;
     }
 
-    if (!resources || resources.length === 0) {
-        return (
-            <div className="mx-auto my-8 text-center text-muted-foreground">
-                No resources found for this project.
-            </div>
-        );
-    }
-
     return (
         <ResourceExplorer
             resources={resources}
