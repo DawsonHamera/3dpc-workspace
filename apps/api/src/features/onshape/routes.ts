@@ -18,8 +18,11 @@ import {
     getOnshapeUser,
     saveConnection,
     getOnshapeDocuments,
+    getOnshapeDocument,
+    getOnshapeThumbnail,
 } from "./service";
 import { Env } from "../../types";
+import { onshapeRequest } from "./client";
 
 
 
@@ -148,7 +151,7 @@ export const onshapeRoutes = new Hono<Env>()
 
 
             return c.redirect(
-                `${c.env.FRONTEND_URL}/settings/integrations`
+                `${c.env.FRONTEND_URL}/dashboard/account`
             );
         }
     )
@@ -258,4 +261,67 @@ export const onshapeRoutes = new Hono<Env>()
                 documents
             );
         }
+    )
+
+    .get(
+        "/documents/:documentId/thumbnail",
+        requireAuth,
+        async (c) => {
+            const user = c.get("user");
+
+            if (!user) {
+                throw new AppError(
+                    401,
+                    "UNAUTHORIZED",
+                    "Unauthorized",
+                );
+            }
+
+            const document =
+                await getOnshapeDocument({
+                    services: c.get("services"),
+                    env: c.env,
+                    userId: user.id,
+                    documentId:
+                        c.req.param("documentId"),
+                });
+
+            const thumbnail =
+                document.thumbnail?.sizes?.find(
+                    (size) =>
+                        size.size === "600x340",
+                );
+
+            if (!thumbnail?.href) {
+                throw new AppError(
+                    404,
+                    "ONSHAPE_THUMBNAIL_NOT_FOUND",
+                    "Onshape document has no thumbnail",
+                );
+            }
+
+            const response =
+                await getOnshapeThumbnail({
+                    services: c.get("services"),
+                    env: c.env,
+                    userId: user.id,
+                    url: thumbnail.href,
+                });
+
+            return new Response(
+                response.body,
+                {
+                    status: response.status,
+                    headers: {
+                        "Content-Type":
+                            response.headers.get(
+                                "Content-Type",
+                            ) ?? "image/png",
+
+                        "Cache-Control":
+                            "public, max-age=300",
+                    },
+                },
+            );
+        },
     );

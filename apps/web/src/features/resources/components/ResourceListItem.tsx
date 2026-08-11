@@ -20,8 +20,8 @@ export function ResourceListItem({
 
     const icon =
         resource.type === "onshape"
-            ? <Box />
-            : <File />;
+            ? <Box className="size-5" />
+            : <File className="size-5" />;
 
     const subtitle =
         resource.type === "onshape"
@@ -29,6 +29,32 @@ export function ResourceListItem({
             : resource.file
                 ? resource.file.originalName
                 : "File";
+
+    const thumbnail =
+        resource.type === "onshape"
+            ? `/api/onshape/documents/${resource.onshape.id}/thumbnail`
+            : undefined;
+
+    const handleClick = () => {
+        if (resource.type === "onshape") {
+            const url =
+                `https://cad.onshape.com/documents/` +
+                `${resource.onshape.id}/w/` +
+                `${resource.onshape.defaultWorkspace.id}`;
+
+            window.open(
+                url,
+                "_blank",
+                "noopener,noreferrer"
+            );
+
+            return;
+        }
+
+        navigate(
+            `/projects/${projectSlug}/resources/${resource.id}`
+        );
+    };
 
     return (
         <div
@@ -39,18 +65,48 @@ export function ResourceListItem({
                 transition-colors
                 hover:bg-muted
             "
-            onClick={() =>
-                navigate(
-                    `/projects/${projectSlug}/resources/${resource.id}`
-                )
-            }
+            onClick={handleClick}
         >
-            <div className="
-                flex size-10 shrink-0
-                items-center justify-center
-                rounded-md bg-muted
-            ">
+            <div
+                className="
+                    relative
+                    flex size-12 shrink-0
+                    items-center justify-center
+                    overflow-hidden
+                    rounded-md
+                    bg-muted
+                    text-muted-foreground
+                "
+            >
                 {icon}
+
+                {thumbnail && (
+                    <img
+                        src={thumbnail}
+                        alt=""
+                        className="
+                            absolute
+                            inset-0
+                            size-full
+                            object-cover
+                            opacity-0
+                            transition-opacity
+                            duration-150
+                        "
+                        onLoad={(event) => {
+                            event.currentTarget.classList.remove(
+                                "opacity-0"
+                            );
+
+                            event.currentTarget.classList.add(
+                                "opacity-100"
+                            );
+                        }}
+                        onError={(event) => {
+                            event.currentTarget.remove();
+                        }}
+                    />
+                )}
             </div>
 
             <div className="min-w-0 flex-1">
@@ -58,38 +114,42 @@ export function ResourceListItem({
                     {resource.name}
                 </p>
 
-                <p className="
-                    truncate
-                    text-sm
-                    text-muted-foreground
-                ">
+                <p
+                    className="
+                        truncate
+                        text-sm
+                        text-muted-foreground
+                    "
+                >
                     {subtitle}
                 </p>
             </div>
 
             {resource.type === "file" &&
                 resource.file && (
-                    <div className="
-                        hidden
-                        text-sm
-                        text-muted-foreground
-                        sm:block
-                    ">
+                    <div
+                        className="
+                            hidden
+                            text-sm
+                            text-muted-foreground
+                            sm:block
+                        "
+                    >
                         {formatBytes(
                             resource.file.size
                         )}
                     </div>
                 )}
 
-            <div className="
-                hidden
-                text-sm
-                text-muted-foreground
-                md:block
-            ">
-                {formatDate(
-                    resource.createdAt
-                )}
+            <div
+                className="
+                    hidden
+                    text-sm
+                    text-muted-foreground
+                    md:block
+                "
+            >
+                {formatDate(resource.createdAt)}
             </div>
 
             <ResourceActions

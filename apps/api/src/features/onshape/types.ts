@@ -1,7 +1,12 @@
 export type OnshapeDocument = {
     id: string;
     name: string;
-    href: string;
+    thumbnail?: {
+        sizes?: {
+            size: string;
+            href: string;
+        }[];
+    };
 
     defaultWorkspace?: {
         id: string;

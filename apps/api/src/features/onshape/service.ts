@@ -453,3 +453,46 @@ export const getOnshapeDocument = async ({
 
     return response.json<OnshapeDocument>();
 };
+
+export const getOnshapeThumbnail = async ({
+    services,
+    env,
+    userId,
+    url,
+}: {
+    services: ServicesContext;
+    env: Bindings;
+    userId: string;
+    url: string;
+}) => {
+    const connection =
+        await findOnshapeConnectionByUserId(
+            services.db,
+            userId,
+        );
+
+    if (!connection) {
+        throw new AppError(
+            401,
+            "ONSHAPE_NOT_CONNECTED",
+            "Onshape is not connected",
+        );
+    }
+
+    const response = await fetch(url, {
+        headers: {
+            Authorization:
+                `Bearer ${connection.accessToken}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new AppError(
+            502,
+            "ONSHAPE_THUMBNAIL_FAILED",
+            `Failed to fetch Onshape thumbnail (${response.status})`,
+        );
+    }
+
+    return response;
+};

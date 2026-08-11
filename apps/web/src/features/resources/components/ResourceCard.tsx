@@ -28,6 +28,32 @@ export function ResourceCard({
             ? <Box className="size-8" />
             : <File className="size-8" />;
 
+    const thumbnail =
+        resource.type === "onshape"
+            ? `/api/onshape/documents/${resource.onshape.id}/thumbnail`
+            : undefined;
+
+    const handleClick = () => {
+        if (resource.type === "onshape") {
+            const url =
+                `https://cad.onshape.com/documents/` +
+                `${resource.onshape.id}/w/` +
+                `${resource.onshape.defaultWorkspace.id}`;
+
+            window.open(
+                url,
+                "_blank",
+                "noopener,noreferrer"
+            );
+
+            return;
+        }
+
+        navigate(
+            `/projects/${projectSlug}/resources/${resource.id}`
+        );
+    };
+
     return (
         <Card
             className="
@@ -36,20 +62,62 @@ export function ResourceCard({
                 transition-colors
                 hover:bg-muted/50
             "
-            onClick={() =>
-                navigate(
-                    `/projects/${projectSlug}/resources/${resource.id}`
-                )
-            }
+            onClick={handleClick}
         >
-            <div className="
-                flex
-                aspect-video
-                items-center
-                justify-center
-                bg-muted
-            ">
-                {icon}
+            <div
+                className="
+                    relative
+                    aspect-video
+                    overflow-hidden
+                    bg-muted
+                "
+            >
+                {thumbnail ? (
+                    <>
+                        <div
+                            className="
+                                absolute
+                                inset-0
+                                flex
+                                items-center
+                                justify-center
+                                text-muted-foreground
+                            "
+                        >
+                            {icon}
+                        </div>
+
+                        <img
+                            src={thumbnail}
+                            alt={`${resource.name} thumbnail`}
+                            className="
+                                relative
+                                size-full
+                                object-cover
+                            "
+                            onLoad={(event) => {
+                                event.currentTarget.style.opacity = "1";
+                            }}
+                            onError={(event) => {
+                                event.currentTarget.style.display =
+                                    "none";
+                            }}
+                            style={{ opacity: 0 }}
+                        />
+                    </>
+                ) : (
+                    <div
+                        className="
+                            flex
+                            size-full
+                            items-center
+                            justify-center
+                            text-muted-foreground
+                        "
+                    >
+                        {icon}
+                    </div>
+                )}
             </div>
 
             <CardContent className="flex items-center gap-3 p-4">
