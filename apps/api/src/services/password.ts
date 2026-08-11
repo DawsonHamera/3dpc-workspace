@@ -1,3 +1,5 @@
+import { hashToken } from "../lib/crypto";
+
 const ALGORITHM = "pbkdf2-sha256";
 const ITERATIONS = 100_000;
 const SALT_LENGTH = 16;
@@ -77,6 +79,7 @@ export async function verifyPassword(
     password: string,
     storedHash: string,
 ): Promise<boolean> {
+
     const [
         algorithm,
         iterationsString,

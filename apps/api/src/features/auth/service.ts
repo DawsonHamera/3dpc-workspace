@@ -4,6 +4,7 @@ import type { Db } from "../../types";
 import { sessions, users } from "../../db/schema";
 import { AppError } from "../../lib/errors";
 import { hashPassword, verifyPassword } from "../../services/password";
+import { updateUserRecord } from "../users/repository";
 
 export const createSession = async (
   db: Db,
@@ -71,10 +72,27 @@ export const verifyUser = async (
     return null;
   }
 
-  const isMatch = await verifyPassword(password, user.passwordHash);
+  // Check if the stored hash is in the old format (SHA-256 without salt and iterations). Temporarily support old hashes for backward compatibility
+  const oldHash = await hashToken(password);
 
-  if (!isMatch) {
-    return null;
+  if (oldHash === user.passwordHash) {
+    console.log("Old hash matched for user:", user.email);
+    const passwordHash = await hashPassword(password);
+
+    await updateUserRecord(
+      db,
+      user.id,
+      {
+        passwordHash,
+      }
+    );
+  } else {
+    
+    const isMatch = await verifyPassword(password, user.passwordHash);
+
+    if (!isMatch) {
+      return null;
+    }
   }
 
   return user.id;
