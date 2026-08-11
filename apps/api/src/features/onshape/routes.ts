@@ -25,6 +25,7 @@ import { Env } from "../../types";
 import { onshapeRequest } from "./client";
 import { requireUser } from "../../lib/auth";
 import { AuditActions } from "../../services/auditLog";
+import { OnshapeDocument } from "./types";
 
 
 
@@ -37,9 +38,6 @@ export const onshapeRoutes = new Hono<Env>()
         async (c) => {
 
             const user = requireUser(c);
-
-            const services =
-                c.get("services");
 
             const state =
                 await createOAuthState({
@@ -56,14 +54,6 @@ export const onshapeRoutes = new Hono<Env>()
                     env: c.env,
                     state,
                 });
-
-
-            await services.audit.create({
-                userId: user.id,
-                action: AuditActions.ONSHAPE_CONNECT_INITIATED,
-                resourceType: "user",
-                resourceId: user.id,
-            });
 
 
             return c.redirect(
@@ -87,6 +77,8 @@ export const onshapeRoutes = new Hono<Env>()
 
             const error =
                 c.req.query("error");
+
+            const services = c.get("services");
 
 
             if (error) {
@@ -151,6 +143,13 @@ export const onshapeRoutes = new Hono<Env>()
                     tokens.expiresAt,
             });
 
+            await services.audit.create({
+                userId,
+                action: AuditActions.ONSHAPE_CONNECT_CREATED,
+                resourceType: "user",
+                resourceId: userId,
+            });
+
 
             return c.redirect(
                 `${c.env.FRONTEND_URL}/dashboard/account`
@@ -177,7 +176,6 @@ export const onshapeRoutes = new Hono<Env>()
                         user.id,
                 });
 
-
             return c.json({
                 connected:
                     !!connection,
@@ -193,6 +191,8 @@ export const onshapeRoutes = new Hono<Env>()
         async (c) => {
             const user =
                 requireUser(c);
+            
+            const services = c.get("services");
 
             await disconnect({
                 services:
@@ -200,6 +200,13 @@ export const onshapeRoutes = new Hono<Env>()
 
                 userId:
                     user.id,
+            });
+
+            await services.audit.create({
+                userId: user.id,
+                action: AuditActions.ONSHAPE_CONNECTION_REMOVED,
+                resourceType: "user",
+                resourceId: user.id,
             });
 
 
@@ -230,10 +237,7 @@ export const onshapeRoutes = new Hono<Env>()
                         user.id,
                 });
 
-
-            return c.json(
-                documents
-            );
+            return c.json<OnshapeDocument[]>(documents);
         }
     )
 

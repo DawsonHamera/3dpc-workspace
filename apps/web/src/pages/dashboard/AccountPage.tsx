@@ -335,15 +335,8 @@ export const AccountPage = () => {
                                     <Button
                                         onClick={() =>
                                             connectOnshape()
-                                        }
-                                        disabled={
-                                            onshapeLoading ||
-                                            connectOnshape.isPending
-                                        }
-                                    >
-                                        {connectOnshape.isPending
-                                            ? "Connecting..."
-                                            : "Connect"}
+                                        }>
+                                        Connect
                                     </Button>
                                 )}
                             </ItemActions>

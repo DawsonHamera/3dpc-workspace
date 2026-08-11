@@ -11,17 +11,20 @@ import {
 import {
     createOnshapeProjectResource,
     getProjectResources,
+    deleteOnshapeProjectResource,
 } from "./service";
 
 import type {
     Env,
-    ServicesContext,
 } from "../../types";
+
 import { getProjectBySlug } from "../projects/service";
 import { AppError } from "../../lib/errors";
 import { requireUser } from "../../lib/auth";
 import { validateJson } from "../../lib/validation";
 import { requireProjectMembership } from "../../middleware/projectMembership";
+import { findOnshapeResourceByDocumentId } from "./repository";
+
 
 export const resourcesRoutes = new Hono<Env>()
     .get(
@@ -29,7 +32,8 @@ export const resourcesRoutes = new Hono<Env>()
         requireAuth,
         requireProjectMembership(),
         async (c) => {
-            const projectSlug = c.req.param("slug");
+            const projectSlug =
+                c.req.param("slug");
 
             if (!projectSlug) {
                 throw new AppError(
@@ -39,10 +43,11 @@ export const resourcesRoutes = new Hono<Env>()
                 );
             }
 
-            const project = await getProjectBySlug(
-                c.get("services"),
-                projectSlug,
-            );
+            const project =
+                await getProjectBySlug(
+                    c.get("services"),
+                    projectSlug,
+                );
 
             if (!project) {
                 throw new AppError(
@@ -52,22 +57,25 @@ export const resourcesRoutes = new Hono<Env>()
                 );
             }
 
-            const resources = await getProjectResources(
-                c.get("services"),
-                c.env,
-                project.id,
-            );
+            const resources =
+                await getProjectResources(
+                    c.get("services"),
+                    c.env,
+                    project.id,
+                );
 
             return c.json(resources);
         },
     )
+
     .post(
         "/onshape",
         requireAuth,
         validateJson(createOnshapeResourceSchema),
+        requireProjectMembership(),
         async (c) => {
-
-            const user = requireUser(c);
+            const user =
+                requireUser(c);
 
             const services =
                 c.get("services");
@@ -75,13 +83,8 @@ export const resourcesRoutes = new Hono<Env>()
             const projectSlug =
                 c.req.param("slug");
 
-            const { documentId } = await c.req.json();
-            /*
-             * Resolve the project here.
-             *
-             * Use your existing project repository/service
-             * rather than querying the projects table directly.
-             */
+            const { documentId } =
+                await c.req.json();
 
             if (!projectSlug) {
                 throw new AppError(
@@ -119,12 +122,82 @@ export const resourcesRoutes = new Hono<Env>()
                 action: "RESOURCE_CREATED",
                 resourceType: "resource",
                 resourceId: resource.id,
-                description: `Created Onshape resource ${resource.id} for project ${project.slug}`,
+                description:
+                    `Created Onshape resource ${resource.id} for project ${project.slug}`,
             });
 
             return c.json(
                 resource,
                 201,
             );
+        },
+    )
+
+    .delete(
+        "/:resourceId/onshape",
+        requireAuth,
+        requireProjectMembership(),
+        async (c) => {
+            const user =
+                requireUser(c);
+
+            const services =
+                c.get("services");
+
+            const projectSlug =
+                c.req.param("slug");
+
+            const resourceId =
+                c.req.param("resourceId");
+
+            if (!projectSlug) {
+                throw new AppError(
+                    400,
+                    "MISSING_PROJECT_SLUG",
+                    "Missing project slug",
+                );
+            }
+
+            if (!resourceId) {
+                throw new AppError(
+                    400,
+                    "MISSING_RESOURCE_ID",
+                    "Missing resource ID",
+                );
+            }
+
+            const project =
+                await getProjectBySlug(
+                    services,
+                    projectSlug,
+                );
+
+            if (!project) {
+                throw new AppError(
+                    404,
+                    "PROJECT_NOT_FOUND",
+                    "Project not found",
+                );
+            }
+
+            await deleteOnshapeProjectResource({
+                services,
+                projectId: project.id,
+                resourceId,
+            });
+
+            await services.audit.create({
+                userId: user.id,
+                action: "RESOURCE_DELETED",
+                resourceType: "resource",
+                resourceId,
+                description:
+                    `Deleted Onshape resource ${resourceId} from project ${project.slug}`,
+            });
+
+            return c.json({
+                message:
+                    "Onshape resource deleted",
+            });
         },
     );

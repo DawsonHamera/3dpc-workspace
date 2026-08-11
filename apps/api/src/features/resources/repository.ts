@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import {
     resources,
@@ -6,7 +6,7 @@ import {
     projectResources,
     CreateResource,
 } from "../../db/schema";
-import { Db } from "../../types";
+import { Db, ServicesContext } from "../../types";
 
 
 export const createResource = async (
@@ -49,4 +49,43 @@ export const addResourceToProject = async (
         .returning();
 
     return projectResource;
+};
+
+export const deleteOnshapeResource = async (
+    db: Db,
+    resourceId: string,
+) => {
+    await db
+        .delete(resourceOnshape)
+        .where(eq(resourceOnshape.resourceId, resourceId));
+}
+
+export const deleteResourceFromProject = async (
+    db: Db,
+    projectId: string,
+    resourceId: string,
+) => {
+    await db
+        .delete(projectResources)
+        .where(
+            and(
+                eq(projectResources.projectId, projectId),
+                eq(projectResources.resourceId, resourceId),
+            )
+        );
+}
+
+export const findOnshapeResourceByDocumentId = async (
+    db: Db,
+    documentId: string,
+) => {
+    return db.query.resourceOnshape.findFirst({
+        where: eq(
+            resourceOnshape.documentId,
+            documentId,
+        ),
+        with: {
+            resource: true,
+        },
+    });
 };

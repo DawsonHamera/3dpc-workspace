@@ -5,42 +5,52 @@ import {
     Grid2X2,
     List,
     Plus,
+    RefreshCw,
     Search,
-    SlidersHorizontal,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import {
     ToggleGroup,
     ToggleGroupItem,
 } from "@/components/ui/toggle-group";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { ResourceGrid } from "./ResourceGrid";
 import { ResourceList } from "./ResourceList";
-import type { Resource } from "../types";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CreateResourceDialog } from "./CreateResourceDialog";
+import { useProjectResources } from "../hooks/useProjectResources";
 
 type Props = {
-    resources: Resource[];
     projectSlug: string;
 };
 
 type ViewMode = "list" | "grid";
 
 export function ResourceExplorer({
-    resources,
     projectSlug,
 }: Props) {
     const [search, setSearch] = useState("");
     const [view, setView] = useState<ViewMode[]>(["list"]);
-    const [createType, setCreateType] = useState<"onshape" | null>(null);
+    const [createType, setCreateType] = useState<
+        "onshape" | null
+    >(null);
+
+    const {
+        data: resources = [],
+        refetch,
+        isFetching,
+    } = useProjectResources(projectSlug);
 
     const filteredResources = useMemo(() => {
-        const query = search
-            .trim()
-            .toLowerCase();
+        const query = search.trim().toLowerCase();
 
         if (!query) {
             return resources;
@@ -57,31 +67,20 @@ export function ResourceExplorer({
         <>
             <div className="space-y-4">
                 <div className="flex items-center gap-2">
-
-                    {/* <Button
-                    variant="outline"
-                    size="icon"
-                    aria-label="Filter resources"
-                >
-                    <SlidersHorizontal />
-                </Button> */}
-
                     <div className="relative flex-1">
                         <Search
                             className="
-                            absolute left-3 top-1/2
-                            size-4
-                            -translate-y-1/2
-                            text-muted-foreground
-                        "
+                                absolute left-3 top-1/2
+                                size-4
+                                -translate-y-1/2
+                                text-muted-foreground
+                            "
                         />
 
                         <Input
                             value={search}
                             onChange={(event) =>
-                                setSearch(
-                                    event.target.value
-                                )
+                                setSearch(event.target.value)
                             }
                             placeholder="Search resources..."
                             className="pl-9"
@@ -92,7 +91,9 @@ export function ResourceExplorer({
                         value={view}
                         onValueChange={(value) => {
                             if (value.length > 0) {
-                                setView(value as ViewMode[]);
+                                setView(
+                                    value as ViewMode[]
+                                );
                             }
                         }}
                     >
@@ -110,6 +111,20 @@ export function ResourceExplorer({
                             <Grid2X2 />
                         </ToggleGroupItem>
                     </ToggleGroup>
+
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label="Refresh resources"
+                        onClick={() => refetch()}
+                        disabled={isFetching}
+                    >
+                        {isFetching ? (
+                            <Spinner />
+                        ) : (
+                            <RefreshCw />
+                        )}
+                    </Button>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger

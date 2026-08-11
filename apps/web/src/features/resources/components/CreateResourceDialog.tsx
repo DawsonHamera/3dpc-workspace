@@ -1,6 +1,5 @@
-"use client";
-
 import { useState } from "react";
+
 import {
     Dialog,
     DialogContent,
@@ -9,11 +8,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 import { useCreateOnshapeResource } from "../hooks/useCreateOnshapeResource";
+import { useOnshapeDocuments } from "@/features/onshape/useOnshapeDocuments";
 
 type Props = {
     open: boolean;
@@ -30,94 +30,156 @@ export function CreateResourceDialog({
 }: Props) {
     const [documentId, setDocumentId] = useState("");
 
-    const createResource = useCreateOnshapeResource();
+const createResource =
+    useCreateOnshapeResource();
 
-    const handleCreate = async (
-        event: React.FormEvent<HTMLFormElement>
-    ) => {
-        event.preventDefault();
+const {
+    data: documents,
+    isLoading: documentsLoading,
+    isError: documentsError,
+} = useOnshapeDocuments();
 
-        if (!documentId.trim()) {
-            return;
-        }
+const handleCreate = async (
+    event: React.FormEvent<HTMLFormElement>
+) => {
+    event.preventDefault();
 
-        await createResource.mutateAsync({
-            projectSlug,
-            documentId: documentId.trim(),
-        });
-
-        setDocumentId("");
-        onOpenChange(false);
-    };
-
-    if (type !== "onshape") {
-        return null;
+    if (!documentId) {
+        return;
     }
 
-    return (
-        <Dialog
-            open={open}
-            onOpenChange={(open) => {
-                if (!open) {
-                    setDocumentId("");
-                }
+    await createResource.mutateAsync({
+        projectSlug,
+        documentId,
+    });
 
-                onOpenChange(open);
-            }}
-        >
-            <DialogContent>
-                <form onSubmit={handleCreate}>
-                    <DialogHeader>
-                        <DialogTitle>
-                            Add Onshape Document
-                        </DialogTitle>
+    setDocumentId("");
+    onOpenChange(false);
+};
 
-                        <DialogDescription>
-                            Add an Onshape document to this project
-                            as a resource.
-                        </DialogDescription>
-                    </DialogHeader>
+if (type !== "onshape") {
+    return null;
+}
 
-                    <div className="space-y-2 py-4">
-                        <Label htmlFor="onshape-document-id">
-                            Document ID
-                        </Label>
+const hasDocuments =
+    documents && documents.length > 0;
 
-                        <Input
-                            id="onshape-document-id"
+console.log("documents", documents);
+
+return (
+    <Dialog
+        open={open}
+        onOpenChange={(open) => {
+            if (!open) {
+                setDocumentId("");
+            }
+
+            onOpenChange(open);
+        }}
+    >
+        <DialogContent>
+            <form onSubmit={handleCreate}>
+                <DialogHeader>
+                    <DialogTitle>
+                        Add Onshape Document
+                    </DialogTitle>
+
+                    <DialogDescription>
+                        Select an Onshape document to add
+                        to this project.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-2 py-4">
+                    <Label htmlFor="onshape-document">
+                        Document
+                    </Label>
+
+                    {documentsLoading ? (
+                        <div className="flex h-10 items-center rounded-md border px-3 text-sm text-muted-foreground">
+                            Loading documents...
+                        </div>
+                    ) : documentsError ? (
+                        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                            Failed to load Onshape documents.
+                        </div>
+                    ) : !hasDocuments ? (
+                        <div className="rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                            No Onshape documents found.
+                        </div>
+                    ) : (
+                        <select
+                            id="onshape-document"
                             value={documentId}
                             onChange={(event) =>
-                                setDocumentId(event.target.value)
+                                setDocumentId(
+                                    event.target.value
+                                )
                             }
-                            placeholder="Enter Onshape document ID"
-                            disabled={createResource.isPending}
-                        />
-                    </div>
-
-                    <DialogFooter>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                            disabled={createResource.isPending}
-                        >
-                            Cancel
-                        </Button>
-
-                        <Button
-                            type="submit"
                             disabled={
-                                !documentId.trim() ||
                                 createResource.isPending
                             }
+                            className="
+                                flex h-10 w-full
+                                rounded-md border
+                                bg-background
+                                px-3 py-2
+                                text-sm
+                                outline-none
+                                focus:ring-2
+                                focus:ring-ring
+                                disabled:cursor-not-allowed
+                                disabled:opacity-50
+                            "
                         >
-                            {createResource.isPending
-                                ? "Adding..."
-                                : "Add Document"}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
+                            <option value="">
+                                Select a document...
+                            </option>
+
+                            {documents.map((document) => (
+                                <option
+                                    key={document.id}
+                                    value={document.id}
+                                >
+                                    {document.name}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                </div>
+
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                            onOpenChange(false)
+                        }
+                        disabled={
+                            createResource.isPending
+                        }
+                    >
+                        Cancel
+                    </Button>
+
+                    <Button
+                        type="submit"
+                        disabled={
+                            !documentId ||
+                            documentsLoading ||
+                            documentsError ||
+                            !hasDocuments ||
+                            createResource.isPending
+                        }
+                    >
+                        {createResource.isPending
+                            ? "Adding..."
+                            : "Add Document"}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
+);
+
 }

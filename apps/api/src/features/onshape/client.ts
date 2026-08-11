@@ -56,8 +56,8 @@ export const onshapeRequest = async ({
     const needsRefresh =
         !connection.expiresAt ||
         connection.expiresAt.getTime() <
-            Date.now() +
-            TOKEN_REFRESH_BUFFER;
+        Date.now() +
+        TOKEN_REFRESH_BUFFER;
 
 
     if (needsRefresh) {
@@ -121,6 +121,11 @@ export const onshapeRequest = async ({
 
 
     if (!response.ok) {
+        console.error(
+            "Onshape API request failed:",
+            response.status,
+            response.statusText
+        );
         throw new AppError(
             502,
             "ONSHAPE_API_FAILED",

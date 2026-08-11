@@ -1,7 +1,6 @@
 import {
     FileText,
     MessageSquare,
-    Upload,
     UserPlus,
     Users,
     Wifi,
@@ -43,24 +42,7 @@ export function ProjectHero() {
 
     const { project } = useProject();
 
-    const upload = useProjectFileUpload();
     const inviteMembers = useInviteProjectMembers();
-
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log("File upload triggered");
-
-        const file = e.target.files?.[0];
-
-        if (file) {
-            const formData = new FormData();
-            formData.append("file", file);
-
-            await upload.mutate({
-                file: file,
-                projectSlug: project.slug,
-            });
-        }
-    };
 
     const handleInviteMembers = async (projectSlug: string, userIds: string[]) => {
         await inviteMembers.mutate({
@@ -81,27 +63,6 @@ export function ProjectHero() {
 
                 <div className="relative flex h-full flex-col justify-between p-8 text-white">
                     <div className="flex justify-end gap-2">
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="any/*"
-                            className="hidden"
-                            onChange={handleFileUpload}
-                        />
-                        <Button
-                            disabled={upload.isPending}
-                            onClick={() =>
-                                fileInputRef.current?.click()
-                            }
-                        >
-
-
-                            <Upload
-                                className="mr-2 h-4 w-4"
-                            />
-                            Upload
-                        </Button>
-
                         <Button variant="secondary">
                             <MessageSquare className="mr-2 h-4 w-4" />
                             Chat

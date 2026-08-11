@@ -4,6 +4,9 @@ import {
     createResource,
     createOnshapeResource,
     addResourceToProject,
+    deleteOnshapeResource,
+    deleteResourceFromProject,
+    findOnshapeResourceByDocumentId,
 } from "./repository";
 
 import {
@@ -11,7 +14,7 @@ import {
 } from "../../lib/errors";
 import { getOnshapeDocument } from "../onshape/service";
 import { projectResources } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export const createOnshapeProjectResource = async ({
     services,
@@ -34,6 +37,24 @@ export const createOnshapeProjectResource = async ({
      * Onshape service rather than touching the connection
      * table directly here.
      */
+
+    const existingOnshapeResource = await findOnshapeResourceByDocumentId(
+        services.db,
+        documentId
+    );
+
+    if (existingOnshapeResource) {
+        await addResourceToProject(
+            services.db,
+            {
+                projectId,
+                resourceId: existingOnshapeResource.resourceId,
+            },
+        );
+
+        return existingOnshapeResource;
+    }
+
     const document =
         await getOnshapeDocument({
             services,
@@ -110,7 +131,6 @@ export const getProjectResources = async (
     return Promise.all(
         resources.map(async ({ resource }) => {
             if (resource.type === "onshape") {
-                console.log(resource)
                 if (!resource.onshape) {
                     throw new AppError(
                         500,
@@ -118,10 +138,6 @@ export const getProjectResources = async (
                         "Onshape resource is missing its Onshape data",
                     );
                 }
-
-                console.log(
-                    "Resource is onshape, fetching document..."
-                );
 
                 const document =
                     await getOnshapeDocument({
@@ -154,4 +170,67 @@ export const getProjectResources = async (
             };
         })
     );
+};
+
+export const deleteOnshapeProjectResource = async ({
+    services,
+    projectId,
+    resourceId,
+}: {
+    services: ServicesContext;
+    projectId: string;
+    resourceId: string;
+}) => {
+    const resource =
+        await services.db.query.projectResources.findFirst({
+            where: and(
+                eq(projectResources.projectId, projectId),
+                eq(projectResources.resourceId, resourceId),
+            ),
+            with: {
+                resource: {
+                    with: {
+                        onshape: true,
+                    },
+                },
+            },
+        });
+
+    if (!resource) {
+        throw new AppError(
+            404,
+            "RESOURCE_NOT_FOUND",
+            "Resource not found in project",
+        );
+    }
+
+    if (resource.resource.type !== "onshape") {
+        throw new AppError(
+            400,
+            "INVALID_RESOURCE_TYPE",
+            "Resource is not an Onshape resource",
+        );
+    }
+
+    await deleteResourceFromProject(
+        services.db,
+        projectId,
+        resourceId,
+    );
+
+    const remaining =
+        await services.db.query.projectResources.findFirst({
+            where: eq(
+                projectResources.resourceId,
+                resourceId,
+            ),
+        });
+
+    if (!remaining) {
+        await deleteOnshapeResource(
+            services.db,
+            resourceId,
+        );
+    }
+
 };

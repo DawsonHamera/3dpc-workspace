@@ -9,14 +9,37 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import type { Resource } from "../types";
+import { useRemoveProjectResource } from "../hooks/useRemoveProjectResource";
 
 type Props = {
     resource: Resource;
+    projectSlug: string;
+    handleOpen: () => void;
 };
 
 export function ResourceActions({
     resource,
+    projectSlug,
+    handleOpen,
 }: Props) {
+    const removeResource = useRemoveProjectResource();
+
+    const handleDelete = async () => {
+        if (
+            !window.confirm(
+                `Delete "${resource.name}" from this project?`
+            )
+        ) {
+            return;
+        }
+
+        await removeResource.mutateAsync({
+            projectSlug,
+            resourceId: resource.id,
+            type: resource.type,
+        });
+    };
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger
@@ -40,16 +63,26 @@ export function ResourceActions({
                     event.stopPropagation()
                 }
             >
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                    onClick={() => handleOpen()}
+                >
                     Open
                 </DropdownMenuItem>
 
-                <DropdownMenuItem>
+                {/* <DropdownMenuItem>
                     Details
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
 
-                <DropdownMenuItem>
-                    Delete
+                <DropdownMenuItem
+                    variant="destructive"
+                    disabled={
+                        removeResource.isPending
+                    }
+                    onClick={handleDelete}
+                >
+                    {removeResource.isPending
+                        ? "Deleting..."
+                        : "Delete"}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

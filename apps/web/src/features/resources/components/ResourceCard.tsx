@@ -139,6 +139,8 @@ export function ResourceCard({
 
                 <ResourceActions
                     resource={resource}
+                    projectSlug={projectSlug}
+                    handleOpen={() => handleClick()}
                 />
             </CardContent>
         </Card>

@@ -154,6 +154,8 @@ export function ResourceListItem({
 
             <ResourceActions
                 resource={resource}
+                projectSlug={projectSlug}
+                handleOpen={() => handleClick()}
             />
         </div>
     );

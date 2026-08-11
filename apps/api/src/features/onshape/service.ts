@@ -428,9 +428,12 @@ export const getOnshapeDocuments = async ({
             path: "/api/documents",
         });
 
+     const data =
+        await response.json<{
+            items: OnshapeDocument[];
+        }>();
 
-
-    return response.json<OnshapeDocument[]>();
+    return data.items;
 };
 
 export const getOnshapeDocument = async ({
@@ -487,6 +490,11 @@ export const getOnshapeThumbnail = async ({
     });
 
     if (!response.ok) {
+        console.error(
+            "Failed to fetch Onshape thumbnail:",
+            response.status,
+            response.statusText,
+        );
         throw new AppError(
             502,
             "ONSHAPE_THUMBNAIL_FAILED",

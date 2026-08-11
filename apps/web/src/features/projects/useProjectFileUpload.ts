@@ -20,9 +20,9 @@ export function useProjectFileUpload() {
             metadata,
         }: UploadArgs) => {
 
-            const res = await api.projects[":projectSlug"].files.$post({
+            const res = await api.projects[":slug"].files.$post({
                 param: {
-                    projectSlug: projectSlug,
+                    slug: projectSlug,
                 },
                 form: {
                     file,
