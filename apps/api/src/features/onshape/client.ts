@@ -124,7 +124,8 @@ export const onshapeRequest = async ({
         console.error(
             "Onshape API request failed:",
             response.status,
-            response.statusText
+            response.statusText,
+            await response.text()
         );
         throw new AppError(
             502,

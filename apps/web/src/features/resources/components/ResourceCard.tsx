@@ -30,7 +30,7 @@ export function ResourceCard({
 
     const thumbnail =
         resource.type === "onshape"
-            ? `/api/onshape/documents/${resource.onshape.id}/thumbnail`
+            ? `${import.meta.env.VITE_API_URL}/onshape/documents/${resource.onshape.id}/thumbnail`
             : undefined;
 
     const handleClick = () => {
