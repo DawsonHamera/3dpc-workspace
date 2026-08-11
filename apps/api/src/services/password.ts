@@ -1,5 +1,5 @@
 const ALGORITHM = "pbkdf2-sha256";
-const ITERATIONS = 600_000;
+const ITERATIONS = 100_000;
 const SALT_LENGTH = 16;
 const KEY_LENGTH = 256;
 
