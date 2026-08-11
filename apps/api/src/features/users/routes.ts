@@ -267,8 +267,7 @@ const usersRoutes = new Hono<Env>()
                 await c.req.json();
 
 
-            const updated =
-                await changeUserPassword({
+            const updated = await changeUserPassword({
                     services: c.get("services"),
                     user: currentUser,
                     userId: c.req.param("id"),

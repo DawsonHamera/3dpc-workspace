@@ -32,6 +32,7 @@ import {
     AuditActions,
 } from "../../services/auditLog";
 import { ServicesContext } from "../../types";
+import { hashPassword } from "../../services/password";
 
 
 export const getUsers = async ({
@@ -225,10 +226,9 @@ export const changeUserPassword = async ({
 
 
     const passwordHash =
-        await hashToken(
+        await hashPassword(
             newPassword
         );
-
 
     const updated =
         await updateUserRecord(
