@@ -128,7 +128,7 @@ export const getProjectResources = async (
             },
         });
 
-    return Promise.all(
+    const resourcesWithFailures = await Promise.all(
         resources.map(async ({ resource }) => {
             if (resource.type === "onshape") {
                 if (!resource.onshape) {
@@ -139,24 +139,26 @@ export const getProjectResources = async (
                     );
                 }
 
-                const document =
-                    await getOnshapeDocument({
+                try {
+                    const document = await getOnshapeDocument({
                         services,
                         env,
                         userId: resource.createdBy,
-                        documentId:
-                            resource.onshape.documentId,
+                        documentId: resource.onshape.documentId,
                     });
 
-                return {
-                    id: resource.id,
-                    name: resource.name,
-                    type: "onshape" as const,
-                    createdBy: resource.createdBy,
-                    createdAt: resource.createdAt,
-                    updatedAt: resource.updatedAt,
-                    onshape: document,
-                };
+                    return {
+                        id: resource.id,
+                        name: resource.name,
+                        type: "onshape" as const,
+                        createdBy: resource.createdBy,
+                        createdAt: resource.createdAt,
+                        updatedAt: resource.updatedAt,
+                        onshape: document,
+                    };
+                } catch {
+                    return null;
+                }
             }
 
             return {
@@ -169,6 +171,11 @@ export const getProjectResources = async (
                 file: resource.file!.file,
             };
         })
+    );
+
+    return resourcesWithFailures.filter(
+        (resource): resource is NonNullable<typeof resource> =>
+            resource !== null
     );
 };
 

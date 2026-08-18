@@ -38,6 +38,14 @@ export const onshapeRequest = async ({
     path: string;
     options?: RequestInit;
 }) => {
+
+    //  Temporarily disabling Onshape integration due to issues with the API.
+    throw new AppError(
+        503,
+        "ONSHAPE_DISABLED",
+        "Onshape integration is temporarily disabled."
+    );
+
     let connection =
         await findOnshapeConnectionByUserId(
             services.db,

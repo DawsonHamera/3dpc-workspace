@@ -1,0 +1,25 @@
+services:
+  server:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    environment:
+      CURA_HOST: cura
+      CURA_PORT: 49674
+    depends_on:
+      - prusaslicer
+    ports:
+      - "3000:3000"
+    volumes:
+    - ./prusaslicer/jobs:/slicer-jobs
+    restart: unless-stopped
+
+  prusaslicer:
+    build:
+      context: ./prusaslicer
+      dockerfile: Dockerfile
+    container_name: 3dpc-prusaslicer
+    # restart: unless-stopped
+    volumes:
+      - ./prusaslicer/jobs:/jobs
+      - ./prusaslicer/worker.sh:/usr/local/bin/worker.sh

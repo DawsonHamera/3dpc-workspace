@@ -1,5 +1,6 @@
 packages:
   - "apps/*"
+  - "server/api"
 allowBuilds:
   esbuild: true
   sharp: true

@@ -2,3 +2,4 @@ node_modules
 .neon
 .neon
 notes.md
+.env
