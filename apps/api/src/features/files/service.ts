@@ -31,10 +31,10 @@ export const uploadFile = async ({
             "pdf",
             "other",
         ],
-        maxFileSize = 1024 * 1024 * 15,
+        maxFileSize = 1024 * 1024 * 100,
     } = options ?? {};
 
-    validateFile(file, maxFileSize, requiredTypes); // 15MB
+    validateFile(file, maxFileSize, requiredTypes); // 100MB
 
 
     const id = crypto.randomUUID();
