@@ -11,8 +11,14 @@ import { useFileContent } from "@/features/files/hooks/useFileContent";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { modelAdapter } from "@/features/files/adapters/modelAdapter";
 import { ModelViewer } from "@/features/files/components/ModelViewer";
+import { PdfViewer } from "@/features/files/components/PdfViewer";
+import { pdfAdapter } from "@/features/files/adapters/PdfAdapter";
 
-export type FileType = "document" | "image" | "model"; //| "video";
+export type FileType =
+    | "document"
+    | "image"
+    | "model"
+    | "pdf";
 
 export type FileComponentProps = {
     fileRecord: FileRecord;
@@ -44,6 +50,10 @@ export const registry: Record<FileType, FileRegistryEntry> = {
     model: {
         viewer: ModelViewer,
         adapter: modelAdapter,
+    },
+    pdf: {
+        viewer: PdfViewer,
+        adapter: pdfAdapter,
     },
 };
 

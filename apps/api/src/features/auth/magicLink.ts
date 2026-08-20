@@ -54,7 +54,7 @@ export async function sendMagicLoginLink({
 
     const url =
         `${frontendUrl}/login/magic?token=${token}`;
-
+    
     await sendEmail({
         env,
         to: user.email,

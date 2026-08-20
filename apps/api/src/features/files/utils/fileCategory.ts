@@ -1,10 +1,10 @@
 export type FileCategory =
     | "image"
     | "model"
+    | "pdf"
     | "document"
     | "video"
     | "other";
-
 
 export function getFileCategory(
     mimeType: string,
@@ -16,7 +16,6 @@ export function getFileCategory(
         .pop()
         ?.toLowerCase();
 
-
     const modelExtensions = [
         "stl",
         "3mf",
@@ -25,33 +24,31 @@ export function getFileCategory(
         "gltf",
     ];
 
-    const documentExtensions = [
-        "pdf",
-        "doc",
-        "docx",
-        "txt",
-    ];
-
-
-    if (extension && modelExtensions.includes(extension)) {
+    if (
+        extension &&
+        modelExtensions.includes(extension)
+    ) {
         return "model";
     }
 
-
-    if (extension && documentExtensions.includes(extension)) {
+    if (extension === "pdoc") {
         return "document";
     }
 
+    if (
+        mimeType === "application/pdf" ||
+        extension === "pdf"
+    ) {
+        return "pdf";
+    }
 
     if (mimeType.startsWith("image/")) {
         return "image";
     }
 
-
     if (mimeType.startsWith("video/")) {
         return "video";
     }
-
 
     return "other";
 }

@@ -17,6 +17,7 @@ export const fileTypeEnum = pgEnum("file_type", [
     "image",
     "model",
     "document",
+    "pdf",
     "video",
     "other",
 ]);

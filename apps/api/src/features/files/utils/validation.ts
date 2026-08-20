@@ -5,7 +5,7 @@ import { getFileCategory } from "./fileCategory";
 export function validateFile(
     file:File,
     max:number,
-    requiredTypes?: ("image"|"model"|"document"|"video"|"other")[]
+    requiredTypes?: ("image"|"model"|"document"|"video"|"pdf"|"other")[]
 ){
     if(file.size > max){
         throw new AppError(

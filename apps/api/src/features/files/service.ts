@@ -28,6 +28,7 @@ export const uploadFile = async ({
             "model",
             "document",
             "video",
+            "pdf",
             "other",
         ],
         maxFileSize = 1024 * 1024 * 15,
