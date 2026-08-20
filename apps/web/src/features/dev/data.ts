@@ -99,6 +99,29 @@ export const devFeatures: DevFeature[] = [
         date: "August 2026",
         status: "complete",
     },
+        {
+        title: "Magic Link Authentication",
+        description:
+            "Added passwordless email authentication with single-use magic login links, token expiration, session creation, and automatic cleanup of consumed tokens.",
+        date: "August 19, 2026",
+        status: "complete",
+    },
+
+    {
+        title: "Expanded File Viewer System",
+        description:
+            "Expanded the file viewer architecture with support for PDF documents and a unified registry-based system for document, image, and 3D model viewers.",
+        date: "August 19, 2026",
+        status: "complete",
+    },
+
+    {
+        title: "Member & Admin Dashboard Experience",
+        description:
+            "Added dedicated dashboard experiences for members, guests, and administrators, including onboarding guidance, project overviews, administrative tools, and activity monitoring.",
+        date: "August 19, 2026",
+        status: "complete",
+    },
 
     // Future Features
     {
@@ -262,5 +285,47 @@ export const devLog: DevLogEntry[] = [
         description:
             "Added resource deletion, duplicate detection, refresh controls, and reusable resource mutation handling across resource types.",
         date: "August 2026",
+    },
+
+        {
+        title: "Added Magic Link Login",
+        description:
+            "Added passwordless login through single-use email authentication links with automatic expiration and session creation.",
+        date: "August 19, 2026",
+    },
+
+    {
+        title: "Expanded File Viewing",
+        description:
+            "Added PDF viewing and improved the file viewer architecture so different file types can use dedicated viewers and adapters.",
+        date: "August 19, 2026",
+    },
+
+    {
+        title: "Added Member Onboarding Dashboard",
+        description:
+            "Added a new member landing experience focused on getting started with the club, including account setup, profile customization, resources, projects, and club tools.",
+        date: "August 19, 2026",
+    },
+
+    {
+        title: "Added Administrative Dashboard",
+        description:
+            "Added an administrator-focused dashboard with project overviews, administrative shortcuts, and a prominent view of recent workspace activity.",
+        date: "August 19, 2026",
+    },
+
+    {
+        title: "Improved Guest Experience",
+        description:
+            "Updated the guest dashboard to better support pending members, visitors, and users exploring the club before receiving full membership access.",
+        date: "August 19, 2026",
+    },
+
+    {
+        title: "Improved Account Settings",
+        description:
+            "Expanded account settings with profile picture management, password updates, preferences, and Onshape account connections, with support for linking directly to specific settings.",
+        date: "August 19, 2026",
     },
 ];

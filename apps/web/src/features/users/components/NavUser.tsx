@@ -22,7 +22,7 @@ import { BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-rea
 import { useNavigate } from "react-router-dom";
 
 
-function getInitials(name: string): string {
+export function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
 
   if (parts.length === 1) {

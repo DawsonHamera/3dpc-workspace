@@ -16,17 +16,19 @@ import {
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { getFileUrl } from "@/lib/helpers";
 import { Spinner } from "@/components/ui/spinner";
+import { getInitials } from "@/features/users/components/NavUser";
+import { useGetUserDetails } from "@/features/users/hooks/useGetUserDetails";
 
 
 export default function ProfilePage() {
 
-    const { data: user, isLoading } = useAuth();
+    const { data: userDetails, isLoading } = useGetUserDetails();
 
     if (isLoading) {
         return <Spinner />;
     }
 
-    if (!user && !isLoading) {
+    if (!userDetails && !isLoading) {
         return (
             <div className="container mx-auto max-w-5xl px-6 py-10">
                 <div className="text-center">
@@ -46,7 +48,6 @@ export default function ProfilePage() {
 
             {/* Hero */}
             <div className="relative">
-
                 <div
                     className="
             h-48
@@ -55,28 +56,38 @@ export default function ProfilePage() {
             from-primary/20
             via-primary/10
             to-background
-          "
+        "
                 />
 
                 {/* Avatar */}
-                <div className="
-          absolute
-          -bottom-16
-          left-8
-          size-32
-          rounded-full
-          border-4
-          border-background
-          overflow-hidden
-          bg-muted
-        ">
-                    <img
-                        src={getFileUrl(user.avatarId)}
-                        alt={user.name}
-                        className="h-full w-full object-cover"
-                    />
+                <div
+                    className="
+            absolute
+            -bottom-16
+            left-8
+            flex
+            size-32
+            items-center
+            justify-center
+            overflow-hidden
+            rounded-full
+            border-4
+            border-background
+            bg-muted
+        "
+                >
+                    {userDetails?.avatarId ? (
+                        <img
+                            src={getFileUrl(userDetails.avatarId)}
+                            alt={userDetails.name}
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <span className="text-4xl font-semibold text-muted-foreground">
+                            {getInitials(userDetails?.name)}
+                        </span>
+                    )}
                 </div>
-
             </div>
 
 
@@ -85,31 +96,31 @@ export default function ProfilePage() {
 
                 <div>
                     <h1 className="text-3xl font-bold">
-                        {user.name}
+                        {userDetails?.name}
                     </h1>
 
                     <div className="mt-2 flex gap-2">
                         <Badge>
-                            {user.role.name}
+                            {userDetails?.role?.name}
                         </Badge>
 
                         <Badge variant="secondary">
-                            {user.grade}
+                            {userDetails?.grade}
                         </Badge>
                     </div>
                 </div>
 
 
-                <Button>
+                {/* <Button>
                     Edit Profile
-                </Button>
+                </Button> */}
 
             </div>
 
 
             <div className="mt-8 grid gap-6 md:grid-cols-3">
 
-                <Card>
+                {/* <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-base">
                             <FolderOpen className="h-5 w-5" />
@@ -146,7 +157,7 @@ export default function ProfilePage() {
                             Completed prints
                         </p>
                     </CardContent>
-                </Card>
+                </Card> */}
 
 
                 <Card>
@@ -159,7 +170,11 @@ export default function ProfilePage() {
 
                     <CardContent>
                         <p className="font-medium">
-                            {user.joined}
+                            {new Date(userDetails?.createdAt).toLocaleDateString(undefined, {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                            })}
                         </p>
                     </CardContent>
                 </Card>
@@ -178,7 +193,7 @@ export default function ProfilePage() {
 
                     <CardContent>
                         <p className="text-muted-foreground">
-                            {user.bio}
+                            {userDetails.bio}
                         </p>
                     </CardContent>
                 </Card>
@@ -195,7 +210,7 @@ export default function ProfilePage() {
 
                         <div className="flex items-center gap-2 text-sm">
                             <Mail className="h-4 w-4" />
-                            {user.email}
+                            {userDetails.email}
                         </div>
 
                     </CardContent>

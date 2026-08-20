@@ -23,7 +23,7 @@ export function ProjectOverviewTab({ project }: Props) {
                 <CardHeader>
                     <CardTitle>Project Overview</CardTitle>
                     <CardDescription>
-                        General project information.
+                        {project.description || "No description available."}
                     </CardDescription>
                 </CardHeader>
 
@@ -72,7 +72,7 @@ export function ProjectOverviewTab({ project }: Props) {
 
                 <CardContent className="space-y-5">
 
-                    {[
+                    {/* {[
                         "Firmware updated",
                         "PCB uploaded",
                         "New member joined",
@@ -92,7 +92,7 @@ export function ProjectOverviewTab({ project }: Props) {
                             </div>
 
                         </div>
-                    ))}
+                    ))} */}
 
                 </CardContent>
 

@@ -53,6 +53,7 @@ export function ProjectSettingsTab() {
                 <Button
                     variant="outline"
                     className="justify-start"
+                    disabled
                 >
                     <Settings className="mr-2 h-4 w-4" />
                     Edit Project Details
@@ -61,6 +62,7 @@ export function ProjectSettingsTab() {
                 <Button
                     variant="outline"
                     className="justify-start"
+                    disabled
                 >
                     Transfer Ownership
                 </Button>

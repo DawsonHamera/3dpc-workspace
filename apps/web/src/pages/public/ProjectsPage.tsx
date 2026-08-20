@@ -36,7 +36,7 @@ export default function ProjectsPage() {
                 </div>
             ) : projects && projects.length > 0 ? (
                 <div className="space-y-4">
-                    {projects.map((project) => (
+                    {projects.filter((project) => project.isFeatured === 1).map((project) => (
                         <Card
                             key={project.id}
                             className="transition hover:shadow-sm"
@@ -47,10 +47,6 @@ export default function ProjectsPage() {
                                         <h2 className="text-xl font-semibold">
                                             {project.name}
                                         </h2>
-
-                                        {project.isFeatured === 1 && (
-                                            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                                        )}
                                     </div>
 
                                     <p className="max-w-3xl text-muted-foreground">

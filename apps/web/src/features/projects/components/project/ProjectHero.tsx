@@ -86,8 +86,7 @@ export function ProjectHero() {
                             </h1>
 
                             <p className="mt-2 max-w-2xl text-white/80">
-                                Design files, documentation, models and team
-                                collaboration all live together in this workspace.
+                              {project.shortDescription || "Design files, documentation, models and team collaboration all live together in this workspace."}
                             </p>
                         </div>
 

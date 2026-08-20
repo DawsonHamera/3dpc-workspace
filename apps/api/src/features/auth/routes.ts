@@ -40,6 +40,7 @@ const authRoutes = new Hono<Env>()
             user: {
                 id: user.id,
                 name: user.name,
+                email: user.email,
                 avatarId: user.avatarFileId,
                 role: user.role,
             }

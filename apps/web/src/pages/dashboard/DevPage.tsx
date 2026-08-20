@@ -65,51 +65,46 @@ export default function DevPage() {
 
                         <div className="overflow-x-auto">
 
-                            <Table>
-
+                            <Table className="table-fixed">
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>
+                                        <TableHead className="w-[25%]">
                                             Update
                                         </TableHead>
 
-                                        <TableHead>
+                                        <TableHead className="w-[55%]">
                                             Description
                                         </TableHead>
 
-                                        <TableHead className="text-right">
+                                        <TableHead className="w-[20%] text-right">
                                             Date
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
 
-
                                 <TableBody>
+                                    {devLog
+                                        .sort(
+                                            (a, b) =>
+                                                new Date(b.date).getTime() -
+                                                new Date(a.date).getTime()
+                                        )
+                                        .map((entry) => (
+                                            <TableRow key={entry.title}>
+                                                <TableCell className="font-medium align-top">
+                                                    {entry.title}
+                                                </TableCell>
 
-                                    {devLog.map((entry) => (
+                                                <TableCell className="whitespace-normal break-words align-top text-muted-foreground">
+                                                    {entry.description}
+                                                </TableCell>
 
-                                        <TableRow key={entry.title}>
-
-                                            <TableCell className="font-medium">
-                                                {entry.title}
-                                            </TableCell>
-
-
-                                            <TableCell className="max-w-xl text-muted-foreground">
-                                                {entry.description}
-                                            </TableCell>
-
-
-                                            <TableCell className="text-right whitespace-nowrap text-muted-foreground">
-                                                {entry.date}
-                                            </TableCell>
-
-                                        </TableRow>
-
-                                    ))}
-
+                                                <TableCell className="whitespace-nowrap text-right align-top text-muted-foreground">
+                                                    {entry.date}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
                                 </TableBody>
-
                             </Table>
 
                         </div>

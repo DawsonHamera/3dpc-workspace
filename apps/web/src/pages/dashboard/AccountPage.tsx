@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { UseFormSetError } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 
 import {
     Item,
@@ -51,10 +52,26 @@ import {
     useConnectOnshape,
     useOnshapeConnection,
 } from "@/features/onshape/hooks";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 export const AccountPage = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const profilePictureRef = useRef<HTMLDivElement>(null);
+    const passwordResetRef = useRef<HTMLDivElement>(null);
+
+    const [searchParams] = useSearchParams();
+
+    const [highlightedCard, setHighlightedCard] = useState<
+        "profile-picture" | "password-reset" | null
+    >(null);
 
     const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
@@ -73,6 +90,60 @@ export const AccountPage = () => {
 
     const connectOnshape = useConnectOnshape();
     const disconnectOnshape = useDisconnectOnshape();
+
+    useEffect(() => {
+        const highlight = searchParams.get("highlight");
+
+        if (
+            highlight !== "profile-picture" &&
+            highlight !== "password-reset"
+        ) {
+            return;
+        }
+
+        const ref =
+            highlight === "profile-picture"
+                ? profilePictureRef
+                : passwordResetRef;
+
+        setHighlightedCard(highlight);
+
+        requestAnimationFrame(() => {
+            ref.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+        });
+    }, [searchParams]);
+
+    useEffect(() => {
+        if (!highlightedCard) return;
+
+        const handlePointerDown = (event: PointerEvent) => {
+            const target = event.target as Node;
+
+            const ref =
+                highlightedCard === "profile-picture"
+                    ? profilePictureRef
+                    : passwordResetRef;
+
+            if (ref.current && !ref.current.contains(target)) {
+                setHighlightedCard(null);
+            }
+        };
+
+        document.addEventListener(
+            "pointerdown",
+            handlePointerDown
+        );
+
+        return () => {
+            document.removeEventListener(
+                "pointerdown",
+                handlePointerDown
+            );
+        };
+    }, [highlightedCard]);
 
     const handleAvatarChange = (
         event: React.ChangeEvent<HTMLInputElement>
@@ -133,8 +204,15 @@ export const AccountPage = () => {
                     </p>
                 </div>
 
-
-                <Card>
+                {/* Profile */}
+                <Card
+                    ref={profilePictureRef}
+                    className={
+                        highlightedCard === "profile-picture"
+                            ? "ring-2 ring-primary ring-offset-2 shadow-lg transition-all"
+                            : "transition-all"
+                    }
+                >
                     <CardHeader>
                         <CardTitle>
                             Profile
@@ -169,7 +247,6 @@ export const AccountPage = () => {
                             </ItemActions>
                         </Item>
 
-
                         <Item>
                             <ItemMedia variant="icon">
                                 <Mail />
@@ -192,9 +269,7 @@ export const AccountPage = () => {
                             </ItemActions>
                         </Item>
 
-
                         <ItemSeparator />
-
 
                         <Item>
                             <ItemMedia variant="icon">
@@ -237,8 +312,15 @@ export const AccountPage = () => {
                     </CardContent>
                 </Card>
 
-
-                <Card>
+                {/* Security */}
+                <Card
+                    ref={passwordResetRef}
+                    className={
+                        highlightedCard === "password-reset"
+                            ? "ring-2 ring-primary ring-offset-2 shadow-lg transition-all"
+                            : "transition-all"
+                    }
+                >
                     <CardHeader>
                         <CardTitle>
                             Security
@@ -281,7 +363,7 @@ export const AccountPage = () => {
                     </CardContent>
                 </Card>
 
-
+                {/* Integrations */}
                 <Card>
                     <CardHeader>
                         <CardTitle>
@@ -335,7 +417,8 @@ export const AccountPage = () => {
                                     <Button
                                         onClick={() =>
                                             connectOnshape()
-                                        }>
+                                        }
+                                    >
                                         Connect
                                     </Button>
                                 )}
@@ -345,7 +428,7 @@ export const AccountPage = () => {
                     </CardContent>
                 </Card>
 
-
+                {/* Preferences */}
                 <Card>
                     <CardHeader>
                         <CardTitle>
@@ -392,7 +475,6 @@ export const AccountPage = () => {
                             </ItemActions>
                         </Item>
 
-
                         <Item>
                             <ItemMedia variant="icon">
                                 <Bell />
@@ -421,7 +503,7 @@ export const AccountPage = () => {
                     </CardContent>
                 </Card>
 
-
+                {/* Danger Zone */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-destructive">
@@ -462,7 +544,6 @@ export const AccountPage = () => {
                 </Card>
 
             </div>
-
 
             <Dialog
                 open={passwordDialogOpen}

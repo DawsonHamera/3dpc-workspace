@@ -31,13 +31,36 @@ import {
     updatePasswordSchema,
     updateRoleSchema,
 } from "./schema";
+import { requireUser } from "../../lib/auth";
 
 
 const usersRoutes = new Hono<Env>()
 
-
     .get(
         "/",
+        requireAuth,
+        async (c) => {
+
+            const user = requireUser(c);
+
+            const userDetails = await getUser({
+                services: c.get("services"),
+                id: user.id,
+            });
+
+            return c.json({
+                id: userDetails?.id,
+                name: userDetails?.name,
+                email: userDetails?.email,
+                role: userDetails?.role,
+                avatarId: userDetails?.avatarFileId,
+                createdAt: userDetails?.createdAt,
+            });
+        }
+    )
+    
+    .get(
+        "/all",
         requireAuth,
         requireRole(
             "admin",

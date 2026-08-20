@@ -8,7 +8,7 @@ export type CreateFileInput = {
     originalName:string;
     mimeType:string;
     size:number;
-    type:"image"|"model"|"document"|"video"|"other";
+    type:"image"|"model"|"document"|"video"|"other"|"pdf";
     metadata?:unknown;
     uploadedBy:string;
 };

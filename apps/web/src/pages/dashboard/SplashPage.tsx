@@ -1,12 +1,10 @@
 import {
-    Box,
-    FolderKanban,
-    Plus,
-    Upload,
-    Users,
-    Clock3,
-    FileText,
     ArrowRight,
+    BookOpen,
+    FolderKanban,
+    KeyRound,
+    Printer,
+    UserRound,
 } from "lucide-react";
 
 import {
@@ -18,259 +16,244 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useState } from "react";
-import { CreateProjectDialog } from "@/features/projects/components/NewProjectDialog";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import AdminSplashPage from "./AdminSplashPage";
+import GuestSplashPage from "./GuestSplashPage";
 
 export default function SplashPage() {
-    const [newProjectOpen, setNewProjectOpen] = useState(false);
+    const navigate = useNavigate();
+
+    const { data: user } = useAuth();
+
+    if (user?.role.name === "admin" || user?.role.name === "owner") {
+        return <AdminSplashPage />;
+    }
+
+    if (user?.role.name === "guest") {
+        return <GuestSplashPage />;
+    }
 
     return (
         <div className="h-full p-6">
-            <div className="grid h-full gap-6">
+            <div className="mx-auto flex h-full max-w-6xl flex-col gap-6">
 
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            Welcome back
-                        </h1>
-                        <p className="text-muted-foreground">
-                            Start building your first project workspace.
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Welcome to 3DPC Workspace
+                    </h1>
+
+                    <p className="mt-1 text-muted-foreground">
+                        Your central place for club projects, files,
+                        resources, and equipment.
+                    </p>
+                </div>
+
+                {/* Account setup */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Get your account ready</CardTitle>
+
+                        <CardDescription>
+                            Take a couple of minutes to make sure your
+                            account is ready to use.
+                        </CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="grid gap-3 md:grid-cols-2">
+
+                        {/* Password */}
+                        <div className="flex items-center gap-4 rounded-lg border p-4">
+                            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                <KeyRound className="size-5 text-primary" />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                                <p className="font-medium">
+                                    Set your password
+                                </p>
+
+                                <p className="text-sm text-muted-foreground">
+                                    Replace your temporary password with
+                                    one of your own.
+                                </p>
+                            </div>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                    navigate("/dashboard/account?highlight=password-reset")
+                                }
+                            >
+                                Open
+                                <ArrowRight className="ml-2 size-4" />
+                            </Button>
+                        </div>
+
+                        {/* Profile */}
+                        <div className="flex items-center gap-4 rounded-lg border p-4">
+                            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                <UserRound className="size-5 text-primary" />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                                <p className="font-medium">
+                                    Set up your profile
+                                </p>
+
+                                <p className="text-sm text-muted-foreground">
+                                    Add a profile picture so members can
+                                    recognize you.
+                                </p>
+                            </div>
+
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                    navigate("/dashboard/account?highlight=profile-picture")
+                                }
+                            >
+                                Open
+                                <ArrowRight className="ml-2 size-4" />
+                            </Button>
+                        </div>
+
+                    </CardContent>
+                </Card>
+
+                {/* Explore */}
+                <div>
+                    <div className="mb-4">
+                        <h2 className="text-xl font-semibold">
+                            Explore the workspace
+                        </h2>
+
+                        <p className="text-sm text-muted-foreground">
+                            Take a look around and see what the club is
+                            working on.
                         </p>
                     </div>
 
-                    <Button onClick={() => setNewProjectOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        New Project
-                    </Button>
-                    <CreateProjectDialog
-                        open={newProjectOpen}
-                        onOpenChange={setNewProjectOpen}
-                    />
-                </div>
+                    <div className="grid gap-4 md:grid-cols-3">
 
-
-                {/* Main grid */}
-                <div className="
-                    grid
-                    flex-1
-                    gap-6
-                    lg:grid-cols-3
-                ">
-
-                    {/* Hero */}
-                    <Card className="lg:col-span-2">
-                        <CardHeader>
-                            <div className="
-                                flex
-                                items-center
-                                gap-4
-                            ">
-                                <div className="
-                                    flex
-                                    h-14
-                                    w-14
-                                    items-center
-                                    justify-center
-                                    rounded-xl
-                                    bg-primary/10
-                                ">
-                                    <Box className="h-7 w-7 text-primary" />
-                                </div>
-
-                                <div>
-                                    <CardTitle>
-                                        Your workspace is empty
-                                    </CardTitle>
-
-                                    <CardDescription>
-                                        Create a project to start organizing
-                                        files, members, and resources.
-                                    </CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-
-                        <CardContent className="grid gap-4">
-
-                            <div className="
-                                grid
-                                gap-4
-                                md:grid-cols-2
-                            ">
-                                <Button
-                                    variant="outline"
-                                    className="h-24 justify-start"
-                                >
-                                    <FolderKanban className="mr-4 h-6 w-6" />
-                                    <div className="text-left">
-                                        <p className="font-medium">
-                                            Create Project
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Start a new workspace
-                                        </p>
-                                    </div>
-                                </Button>
-
-
-                                <Button
-                                    variant="outline"
-                                    className="h-24 justify-start"
-                                >
-                                    <Upload className="mr-4 h-6 w-6" />
-                                    <div className="text-left">
-                                        <p className="font-medium">
-                                            Upload Files
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Add existing resources
-                                        </p>
-                                    </div>
-                                </Button>
-                            </div>
-
-
-                            <div className="rounded-lg border p-4">
-                                <div className="mb-2 flex justify-between">
-                                    <span className="text-sm font-medium">
-                                        Getting started
-                                    </span>
-
-                                    <span className="text-sm text-muted-foreground">
-                                        0 / 4
-                                    </span>
-                                </div>
-
-                                <Progress value={0} />
-
-                                <div className="
-                                    mt-4
-                                    grid
-                                    gap-2
-                                    text-sm
-                                ">
-                                    <div className="flex items-center gap-2">
-                                        <Plus className="h-4 w-4" />
-                                        Create your first project
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Users className="h-4 w-4" />
-                                        Invite members
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <FileText className="h-4 w-4" />
-                                        Add documentation
-                                    </div>
-                                </div>
-                            </div>
-
-                        </CardContent>
-                    </Card>
-
-
-
-                    {/* Right side */}
-                    <div className="grid gap-6">
-
+                        {/* Resources */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-base">
-                                    Workspace Overview
-                                </CardTitle>
-                            </CardHeader>
-
-                            <CardContent className="grid gap-4">
-
-                                <div className="flex items-center justify-between">
-                                    <span className="flex gap-2 text-sm">
-                                        <FolderKanban className="h-4 w-4" />
-                                        Projects
-                                    </span>
-                                    <span className="font-bold">
-                                        1
-                                    </span>
+                                <div className="mb-2 flex size-11 items-center justify-center rounded-lg bg-primary/10">
+                                    <BookOpen className="size-6 text-primary" />
                                 </div>
 
-                                <div className="flex items-center justify-between">
-                                    <span className="flex gap-2 text-sm">
-                                        <FileText className="h-4 w-4" />
-                                        Files
-                                    </span>
-                                    <span className="font-bold">
-                                        12
-                                    </span>
-                                </div>
+                                <CardTitle>Resources</CardTitle>
 
-                                <div className="flex items-center justify-between">
-                                    <span className="flex gap-2 text-sm">
-                                        <Users className="h-4 w-4" />
-                                        Members
-                                    </span>
-                                    <span className="font-bold">
-                                        2
-                                    </span>
-                                </div>
-
-                            </CardContent>
-                        </Card>
-
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">
-                                    Recent Activity
-                                </CardTitle>
+                                <CardDescription>
+                                    Read club guides, documentation, and
+                                    other useful reference material.
+                                </CardDescription>
                             </CardHeader>
 
                             <CardContent>
-                                <div className="
-                                    flex
-                                    h-32
-                                    items-center
-                                    justify-center
-                                    rounded-lg
-                                    border
-                                    border-dashed
-                                    text-sm
-                                    text-muted-foreground
-                                ">
-                                    <div className="flex items-center gap-2">
-                                        <Clock3 className="h-4 w-4" />
-                                        No activity yet
-                                    </div>
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        navigate(
+                                            "/dashboard/guides/printer-guide"
+                                        )
+                                    }
+                                >
+                                    Browse resources
+                                    <ArrowRight className="ml-2 size-4" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+
+                        {/* Projects */}
+                        <Card>
+                            <CardHeader>
+                                <div className="mb-2 flex size-11 items-center justify-center rounded-lg bg-primary/10">
+                                    <FolderKanban className="size-6 text-primary" />
                                 </div>
+
+                                <CardTitle>Projects</CardTitle>
+
+                                <CardDescription>
+                                    See what the club is currently
+                                    building and working on.
+                                </CardDescription>
+                            </CardHeader>
+
+                            <CardContent>
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        navigate(
+                                            "/projects/recreator-filament-recycling"
+                                        )
+                                    }
+                                >
+                                    View project
+                                    <ArrowRight className="ml-2 size-4" />
+                                </Button>
+                            </CardContent>
+                        </Card>
+
+                        {/* Printers */}
+                        <Card>
+                            <CardHeader>
+                                <div className="mb-2 flex size-11 items-center justify-center rounded-lg bg-primary/10">
+                                    <Printer className="size-6 text-primary" />
+                                </div>
+
+                                <CardTitle>Printers</CardTitle>
+
+                                <CardDescription>
+                                    Explore the club's printers and
+                                    available equipment.
+                                </CardDescription>
+                            </CardHeader>
+
+                            <CardContent>
+                                <Button
+                                    variant="outline"
+                                    onClick={() =>
+                                        navigate("/dashboard/printers")
+                                    }
+                                >
+                                    View printers
+                                    <ArrowRight className="ml-2 size-4" />
+                                </Button>
                             </CardContent>
                         </Card>
 
                     </div>
-
                 </div>
 
-
-                {/* Bottom card */}
-                <Card>
-                    <CardContent className="
-                        flex
-                        items-center
-                        justify-between
-                        py-4
-                    ">
+                {/* Footer */}
+                <Card className="mt-auto">
+                    <CardContent className="flex items-center justify-between gap-4 py-4">
                         <div>
                             <p className="font-medium">
-                                Need help getting started?
+                                Ready to get started?
                             </p>
+
                             <p className="text-sm text-muted-foreground">
-                                Learn how projects, files, and collaboration work.
+                                Jump into a project or explore the club's
+                                resources and equipment.
                             </p>
                         </div>
 
-                        <Button variant="ghost">
-                            View Guide
-                            <ArrowRight className="ml-2 h-4 w-4" />
+                        <Button
+                            variant="ghost"
+                            onClick={() =>
+                                navigate(
+                                    "/projects/REPLACE_WITH_PROJECT_ID"
+                                )
+                            }
+                        >
+                            View project
+                            <ArrowRight className="ml-2 size-4" />
                         </Button>
                     </CardContent>
                 </Card>
