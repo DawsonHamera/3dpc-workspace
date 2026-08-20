@@ -23,3 +23,4 @@ services:
     volumes:
       - ./prusaslicer/jobs:/jobs
       - ./prusaslicer/worker.sh:/usr/local/bin/worker.sh
+      - ./prusaslicer/data:/var/lib/prusaslicer

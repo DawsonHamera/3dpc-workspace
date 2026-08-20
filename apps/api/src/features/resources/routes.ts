@@ -12,6 +12,8 @@ import {
     createOnshapeProjectResource,
     getProjectResources,
     deleteOnshapeProjectResource,
+    createFileProjectResource,
+    deleteFileProjectResource,
 } from "./service";
 
 import type {
@@ -24,7 +26,14 @@ import { requireUser } from "../../lib/auth";
 import { validateJson } from "../../lib/validation";
 import { requireProjectMembership } from "../../middleware/projectMembership";
 import { findOnshapeResourceByDocumentId } from "./repository";
+import { uploadFile } from "../files/service";
+import { zValidator } from "@hono/zod-validator";
+import z from "zod";
 
+
+const uploadFileSchema = z.object({
+    file: z.instanceof(File),
+});
 
 export const resourcesRoutes = new Hono<Env>()
     .get(
@@ -200,4 +209,133 @@ export const resourcesRoutes = new Hono<Env>()
                     "Onshape resource deleted",
             });
         },
+    )
+
+    .post(
+        "/file",
+        requireAuth,
+        requireProjectMembership(),
+        zValidator("form", uploadFileSchema),
+        async (c) => {
+
+            const body = await c.req.parseBody();
+            const file = body.file;
+            const user = requireUser(c);
+            const services = c.get("services");
+            const projectSlug = c.req.param("slug");
+
+            if (!(file instanceof File)) {
+                throw new AppError(
+                    400,
+                    "BAD_REQUEST",
+                    "No file provided"
+                );
+            }
+
+            if (!projectSlug) {
+                throw new AppError(
+                    400,
+                    "MISSING_PROJECT_SLUG",
+                    "Missing project slug",
+                );
+            }
+
+            const savedFile = await uploadFile({
+                services: services,
+                file,
+                uploadedBy: user.id,
+            });
+
+            const project =
+                await getProjectBySlug(
+                    services,
+                    projectSlug,
+                );
+
+            if (!project) {
+                throw new AppError(
+                    404,
+                    "PROJECT_NOT_FOUND",
+                    "Project not found",
+                );
+            }
+
+            const resource = await createFileProjectResource({
+                services,
+                userId: user.id,
+                projectId: project.id,
+                fileId: savedFile.id,
+            });
+
+            return c.json({
+                message:
+                    "File uploaded",
+            });
+        },
+    )
+
+    .delete(
+        "/:resourceId/file",
+        requireAuth,
+        requireProjectMembership(),
+        async (c) => {
+            const user =
+                requireUser(c);
+            const services =
+                c.get("services");
+            const projectSlug =
+                c.req.param("slug");
+            const resourceId =
+                c.req.param("resourceId");
+
+            if (!projectSlug) {
+                throw new AppError(
+                    400,
+                    "MISSING_PROJECT_SLUG",
+                    "Missing project slug",
+                );
+            }
+
+            if (!resourceId) {
+                throw new AppError(
+                    400,
+                    "MISSING_RESOURCE_ID",
+                    "Missing resource ID",
+                );
+            }
+
+            const project =
+                await getProjectBySlug(
+                    services,
+                    projectSlug,
+                );
+
+            if (!project) {
+                throw new AppError(
+                    404,
+                    "PROJECT_NOT_FOUND",
+                    "Project not found",
+                );
+            }
+
+            await deleteFileProjectResource({
+                services,
+                projectId: project.id,
+                resourceId,
+            } );
+
+            await services.audit.create({
+                userId: user.id,
+                action: "RESOURCE_DELETED",
+                resourceType: "resource",
+                resourceId,
+                description:
+                    `Deleted file resource ${resourceId} from project ${project.slug}`,
+            });
+
+            return c.json({
+                message:
+                    "File resource deleted",
+            });
+        }
     );

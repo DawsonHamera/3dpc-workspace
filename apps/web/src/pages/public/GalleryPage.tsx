@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { GalleryLightbox } from "./GalleryLightBox";
 
@@ -10,7 +9,7 @@ const galleryItems = [
         image: "/images/recreator.webp",
     },
     {
-        title: "Student Designs",
+        title: "Student Design",
         category: "CAD",
         image: "/images/gallery/maze-cad.png",
     },

@@ -1,9 +1,12 @@
-import { Mail, MapPin, Clock, MessageCircle } from "lucide-react";
+import { Mail, MapPin, Clock, MessageCircle, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function ContactPage() {
+
+    const navigate = useNavigate();
+
     return (
         <div className="container mx-auto px-6 py-16">
 
@@ -75,11 +78,16 @@ export default function ContactPage() {
                             Meetings
                         </h2>
 
-                        <p className="text-sm text-muted-foreground">
-                            Thursdays
-                            <br />
-                            12:15 PM - 12:41 Pm (Lunch)
-                        </p>
+                        <div className="space-y-1 text-sm text-muted-foreground">
+                            <p className="text-foreground">
+                                Thursdays
+                            </p>
+                            <p>12:04 PM - 12:34 PM (Lunch)</p>
+                              <Button variant="link" onClick={() => navigate("/calendar")}>
+                            <Calendar className=" h-4 w-4" />
+                                Check calendar for more details
+                        </Button>
+                        </div>
 
                     </CardContent>
                 </Card>

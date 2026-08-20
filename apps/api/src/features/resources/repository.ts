@@ -5,6 +5,7 @@ import {
     resourceOnshape,
     projectResources,
     CreateResource,
+    resourceFiles,
 } from "../../db/schema";
 import { Db, ServicesContext } from "../../types";
 
@@ -35,6 +36,21 @@ export const createOnshapeResource = async (
 
     return resource;
 };
+
+export const createFileResourceRecord = async (
+    db: Db,
+    data: {
+        resourceId: string;
+        fileId: string;
+    },
+) => {
+    const [resource] = await db
+        .insert(resourceFiles)
+        .values(data)
+        .returning();
+    return resource;
+}
+
 
 export const addResourceToProject = async (
     db: Db,

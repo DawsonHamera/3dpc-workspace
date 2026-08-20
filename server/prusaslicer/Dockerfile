@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxi6 \
     libxfixes3 \
     libxkbcommon0 \
+    jq \
     && \
     rm -rf /var/lib/apt/lists/*
 

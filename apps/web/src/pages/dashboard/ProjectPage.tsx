@@ -101,7 +101,7 @@ export const ProjectPage = () => {
             label: "Settings",
             icon: <Settings className="h-4 w-4" />,
             content: (
-                <ProjectSettingsTab/>
+                <ProjectSettingsTab />
             ),
         },
     ];

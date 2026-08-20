@@ -30,8 +30,8 @@ const quotes = [
     {
         quote:
             "The 3D Printing Club is fantastic, filled with members who are truly enthusiastic about 3D printing and sharing their knowledge and experience with interested students. It's a great place to go if you're looking into getting or already have a 3D printer and want to connect with other passionate students. Furthermore, the 3DPC is a very active club, with many opportunities to engage with the 3D printing community and learn more about the hobby!",
-        name: "Club Treasurer",
-        role: "Ethan M.",
+        name: "Ethan M.",
+        role: "Club Treasurer",
         initials: "EM",
     },
 ];
@@ -218,9 +218,9 @@ export default function HomePage() {
                                 fabrication, programming, and sustainability.
                             </p>
 
-                            <Button className="mt-8">
+                            {/* <Button className="mt-8">
                                 Explore Project
-                            </Button>
+                            </Button> */}
 
                         </div>
 

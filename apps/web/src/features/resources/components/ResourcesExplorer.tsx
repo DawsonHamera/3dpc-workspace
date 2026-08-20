@@ -25,8 +25,9 @@ import {
 
 import { ResourceGrid } from "./ResourceGrid";
 import { ResourceList } from "./ResourceList";
-import { CreateResourceDialog } from "./CreateResourceDialog";
+import { CreateOnshapeResourceDialog } from "./CreateOnshapeResourceDialog";
 import { useProjectResources } from "../hooks/useProjectResources";
+import { CreateFileResourceDialog } from "./CreateFileResourceDialog";
 
 type Props = {
     projectSlug: string;
@@ -40,7 +41,7 @@ export function ResourceExplorer({
     const [search, setSearch] = useState("");
     const [view, setView] = useState<ViewMode[]>(["list"]);
     const [createType, setCreateType] = useState<
-        "onshape" | null
+        "onshape" | "file" | null
     >(null);
 
     const {
@@ -144,6 +145,13 @@ export function ResourceExplorer({
                             >
                                 Onshape Document
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    setCreateType("file")
+                                }
+                            >
+                                File Upload
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -161,14 +169,22 @@ export function ResourceExplorer({
                 )}
             </div>
 
-            <CreateResourceDialog
+            <CreateOnshapeResourceDialog
                 open={createType === "onshape"}
                 onOpenChange={(open) => {
                     if (!open) {
                         setCreateType(null);
                     }
                 }}
-                type={createType}
+                projectSlug={projectSlug}
+            />
+            <CreateFileResourceDialog
+                open={createType === "file"}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setCreateType(null);
+                    }
+                }}
                 projectSlug={projectSlug}
             />
         </>

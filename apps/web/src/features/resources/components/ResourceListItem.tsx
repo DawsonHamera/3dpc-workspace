@@ -30,9 +30,11 @@ export function ResourceListItem({
                 ? resource.file.originalName
                 : "File";
 
-    const thumbnail =
+      const thumbnail =
         resource.type === "onshape"
             ? `${import.meta.env.VITE_API_URL}/onshape/documents/${resource.onshape.id}/thumbnail`
+            : resource.type === "file" && resource.file?.id
+            ? `${import.meta.env.VITE_API_URL}/files/${resource.file.id}/download`
             : undefined;
 
     const handleClick = () => {
@@ -50,9 +52,15 @@ export function ResourceListItem({
 
             return;
         }
+        if (resource.type === "file" && resource.file?.id) {
+            navigate(
+                `/dashboard/projects/${projectSlug}/files/${resource.file.id}/view`
+            );
+            return;
+        }
 
         navigate(
-            `/projects/${projectSlug}/resources/${resource.id}`
+            `/dashboard/projects/${projectSlug}/resources/${resource.id}`
         );
     };
 

@@ -1,87 +1,69 @@
 import { Hono } from "hono";
 import {
   createPrusaSlicerJob,
-  getPrusaSlicerJob,
+  getPrusaSlicerJobStatus,
   getPrusaSlicerOutput,
   deletePrusaSlicerJob,
 } from "../services/prusaSlicer.js";
 
-const app = new Hono();
+const prusaSlicerRoutes = new Hono();
 
-app.post("/jobs", async (c) => {
+prusaSlicerRoutes.post("/jobs", async (c) => {
   const body = await c.req.parseBody();
 
   const file = body.file;
-  const printerId = body.printerId;
-  const filamentId = body.filamentId;
-  const printProfileId = body.printProfileId;
 
   if (!(file instanceof File)) {
     return c.json(
       {
-        error: "Missing file",
+        error: "file is required",
       },
       400,
     );
   }
 
-  if (typeof printerId !== "string") {
+  if (!file.name.toLowerCase().endsWith(".stl")) {
     return c.json(
       {
-        error: "Missing printerId",
+        error: "Only STL files are currently supported",
       },
       400,
     );
   }
 
-  if (typeof filamentId !== "string") {
-    return c.json(
-      {
-        error: "Missing filamentId",
-      },
-      400,
-    );
-  }
+  const printer =
+    typeof body.printer === "string"
+      ? body.printer
+      : "ender-3";
 
-  if (typeof printProfileId !== "string") {
-    return c.json(
-      {
-        error: "Missing printProfileId",
-      },
-      400,
-    );
-  }
+  const filament =
+    typeof body.filament === "string"
+      ? body.filament
+      : "pla";
 
-  try {
-    const result = await createPrusaSlicerJob({
-      file: Buffer.from(await file.arrayBuffer()),
-      printerId,
-      filamentId,
-      printProfileId,
-    });
+  const profile =
+    typeof body.profile === "string"
+      ? body.profile
+      : "0.20mm";
 
-    return c.json(result, 201);
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to create PrusaSlicer job";
+  const input = Buffer.from(await file.arrayBuffer());
 
-    return c.json(
-      {
-        error: message,
-      },
-      400,
-    );
-  }
+  const job = await createPrusaSlicerJob(input, {
+    originalFilename: file.name,
+    printer,
+    filament,
+    profile,
+  });
+
+  return c.json(job, 202);
 });
 
-app.get("/jobs/:id", async (c) => {
+prusaSlicerRoutes.get("/jobs/:id", async (c) => {
   const id = c.req.param("id");
 
-  const job = await getPrusaSlicerJob(id);
+  const result = await getPrusaSlicerJobStatus(id);
 
-  if (!job) {
+  if (result === null) {
     return c.json(
       {
         error: "Job not found",
@@ -90,15 +72,15 @@ app.get("/jobs/:id", async (c) => {
     );
   }
 
-  return c.json(job);
+  return c.json(result);
 });
 
-app.get("/jobs/:id/output", async (c) => {
+prusaSlicerRoutes.get("/jobs/:id/output", async (c) => {
   const id = c.req.param("id");
 
   const result = await getPrusaSlicerOutput(id);
 
-  if (!result) {
+  if (result === null) {
     return c.json(
       {
         error: "Job not found",
@@ -108,25 +90,25 @@ app.get("/jobs/:id/output", async (c) => {
   }
 
   if (result.status !== "complete") {
-    return c.json(result);
+    return c.json(result, 409);
   }
 
   return new Response(result.output, {
     headers: {
-      "Content-Type": "application/octet-stream",
+      "Content-Type": "text/plain",
       "Content-Disposition": `attachment; filename="${id}.gcode"`,
     },
   });
 });
 
-app.delete("/jobs/:id", async (c) => {
+prusaSlicerRoutes.delete("/jobs/:id", async (c) => {
   const id = c.req.param("id");
 
   await deletePrusaSlicerJob(id);
 
   return c.json({
-    success: true,
+    deleted: true,
   });
 });
 
-export default app;
+export default prusaSlicerRoutes;

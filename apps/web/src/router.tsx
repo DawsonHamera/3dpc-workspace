@@ -34,6 +34,7 @@ import LogsPage from "./pages/dashboard/LogsPage";
 import ManageUsersPage from "./pages/dashboard/ManageUsersPage";
 import MembershipPage from "./pages/dashboard/MembershipPages";
 import OnshapeTestPage from "./pages/dashboard/OnshapeTestPage";
+import PrintersPage from "./pages/dashboard/PrintersPage";
 
 export const router = createBrowserRouter([
     {
@@ -132,6 +133,10 @@ export const router = createBrowserRouter([
                             {
                                 path: "test-onshape",
                                 element: <OnshapeTestPage />,
+                            },
+                            {
+                                path: "printers",
+                                element: <PrintersPage />,
                             }
                         ],
                     },

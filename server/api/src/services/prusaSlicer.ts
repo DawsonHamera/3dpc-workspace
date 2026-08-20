@@ -1,12 +1,32 @@
-import { mkdir, writeFile, readFile, access, rm } from "node:fs/promises";
+import {
+  mkdir,
+  writeFile,
+  readFile,
+  access,
+  rm,
+} from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
-import { getPrinter } from "../config/printers.js";
-import { getFilament } from "../config/filaments.js";
-import { getPrintProfile } from "../config/printProfiles.js";
+const JOBS_DIR =
+  process.env.PRUSASLICER_JOBS_DIR ?? "/jobs";
 
-const JOBS_DIR = process.env.PRUSASLICER_JOBS_DIR ?? "../prusaslicer/jobs";
+export type PrusaSlicerPrinter =
+  | "ender-3"
+  | "ender-3-v3-se"
+  | "cr-10"
+  | "ultimaker-s5";
+
+export type PrusaSlicerFilament =
+  | "pla"
+  | "petg"
+  | "abs"
+  | "tpu";
+
+export type PrusaSlicerProfile =
+  | "0.20mm"
+  | "0.15mm"
+  | "0.30mm";
 
 export type PrusaSlicerJobStatus =
   | "queued"
@@ -14,19 +34,16 @@ export type PrusaSlicerJobStatus =
   | "complete"
   | "failed";
 
-export type CreatePrusaSlicerJobInput = {
-  file: Buffer;
-  printerId: string;
-  filamentId: string;
-  printProfileId: string;
+export type PrusaSlicerJobMeta = {
+  originalFilename: string;
+  printer: PrusaSlicerPrinter;
+  filament: PrusaSlicerFilament;
+  profile: PrusaSlicerProfile;
 };
 
 export type PrusaSlicerJob = {
   id: string;
-  status: PrusaSlicerJobStatus;
-  printerId: string;
-  filamentId: string;
-  printProfileId: string;
+  status: "queued";
 };
 
 function jobDir(jobId: string) {
@@ -38,26 +55,9 @@ function marker(jobId: string, name: string) {
 }
 
 export async function createPrusaSlicerJob(
-  input: CreatePrusaSlicerJobInput,
+  input: Buffer,
+  meta: PrusaSlicerJobMeta,
 ) {
-  const printer = getPrinter(input.printerId);
-
-  if (!printer) {
-    throw new Error(`Unknown printer: ${input.printerId}`);
-  }
-
-  const filament = getFilament(input.filamentId);
-
-  if (!filament) {
-    throw new Error(`Unknown filament: ${input.filamentId}`);
-  }
-
-  const printProfile = getPrintProfile(input.printProfileId);
-
-  if (!printProfile) {
-    throw new Error(`Unknown print profile: ${input.printProfileId}`);
-  }
-
   const id = randomUUID();
   const dir = jobDir(id);
 
@@ -67,21 +67,12 @@ export async function createPrusaSlicerJob(
 
   await writeFile(
     path.join(dir, "input.stl"),
-    input.file,
+    input,
   );
 
   await writeFile(
-    path.join(dir, "job.json"),
-    JSON.stringify(
-      {
-        id,
-        printerId: printer.id,
-        filamentId: filament.id,
-        printProfileId: printProfile.id,
-      },
-      null,
-      2,
-    ),
+    path.join(dir, "meta.json"),
+    JSON.stringify(meta, null, 2),
   );
 
   await writeFile(marker(id, "queued"), "");
@@ -89,15 +80,12 @@ export async function createPrusaSlicerJob(
   return {
     id,
     status: "queued" as const,
-    printerId: printer.id,
-    filamentId: filament.id,
-    printProfileId: printProfile.id,
   };
 }
 
 export async function getPrusaSlicerJobStatus(
   jobId: string,
-): Promise<PrusaSlicerJobStatus | null> {
+) {
   const dir = jobDir(jobId);
 
   try {
@@ -107,42 +95,56 @@ export async function getPrusaSlicerJobStatus(
   }
 
   if (await exists(marker(jobId, "failed"))) {
-    return "failed";
+    return {
+      id: jobId,
+      status: "failed" as const,
+    };
   }
 
   if (await exists(marker(jobId, "complete"))) {
-    return "complete";
+    return {
+      id: jobId,
+      status: "complete" as const,
+    };
   }
 
   if (await exists(marker(jobId, "processing"))) {
-    return "processing";
+    return {
+      id: jobId,
+      status: "processing" as const,
+    };
   }
 
   if (await exists(marker(jobId, "queued"))) {
-    return "queued";
+    return {
+      id: jobId,
+      status: "queued" as const,
+    };
   }
 
   return null;
 }
 
-export async function getPrusaSlicerOutput(jobId: string) {
+export async function getPrusaSlicerOutput(
+  jobId: string,
+) {
   const status = await getPrusaSlicerJobStatus(jobId);
 
   if (status === null) {
     return null;
   }
 
-  if (status !== "complete") {
+  if (status.status !== "complete") {
     return {
-      status,
+      status: status.status,
       output: null,
     };
   }
 
-  const outputPath = path.join(jobDir(jobId), "output.gcode");
-
   try {
-    const output = await readFile(outputPath);
+    const output = await readFile(
+      path.join(jobDir(jobId), "output.gcode"),
+    );
 
     return {
       status: "complete" as const,
@@ -156,31 +158,9 @@ export async function getPrusaSlicerOutput(jobId: string) {
   }
 }
 
-export async function getPrusaSlicerJob(jobId: string) {
-  const status = await getPrusaSlicerJobStatus(jobId);
-
-  if (!status) {
-    return null;
-  }
-
-  try {
-    const metadata = JSON.parse(
-      await readFile(
-        path.join(jobDir(jobId), "job.json"),
-        "utf8",
-      ),
-    );
-
-    return {
-      ...metadata,
-      status,
-    } as PrusaSlicerJob;
-  } catch {
-    return null;
-  }
-}
-
-export async function deletePrusaSlicerJob(jobId: string) {
+export async function deletePrusaSlicerJob(
+  jobId: string,
+) {
   await rm(jobDir(jobId), {
     recursive: true,
     force: true,

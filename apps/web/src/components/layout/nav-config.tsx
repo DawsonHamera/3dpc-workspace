@@ -56,55 +56,25 @@ export const dashboardNav: NavItem[] = [
             navigate("/dashboard/printing"),
 
         items: [
-            {
-                title: "Print Queue",
-                onClick: (navigate) =>
-                    navigate("/dashboard/printing"),
-            },
+            // {
+            //     title: "Print Queue",
+            //     onClick: (navigate) =>
+            //         navigate("/dashboard/printing"),
+            // },
 
             {
-                title: "Active Printers",
+                title: "Printers",
                 onClick: (navigate) =>
                     navigate("/dashboard/printers"),
             },
 
-            {
-                title: "Print History",
-                onClick: (navigate) =>
-                    navigate("/dashboard/printers/history"),
-            },
+            // {
+            //     title: "Print History",
+            //     onClick: (navigate) =>
+            //         navigate("/dashboard/printers/history"),
+            // },
         ],
     },
-
-
-    {
-        title: "Designs",
-        icon: <BoxIcon />,
-
-        onClick: (navigate) =>
-            navigate("/dashboard/models"),
-
-        items: [
-            {
-                title: "Model Library",
-                onClick: (navigate) =>
-                    navigate("/dashboard/models"),
-            },
-
-            {
-                title: "Upload Model",
-                onClick: (navigate) =>
-                    navigate("/dashboard/models/upload"),
-            },
-
-            {
-                title: "My Designs",
-                onClick: (navigate) =>
-                    navigate("/dashboard/models/mine"),
-            },
-        ],
-    },
-
 
     {
         title: "Club Management",
@@ -159,6 +129,12 @@ export const dashboardNav: NavItem[] = [
                 onClick: (navigate) =>
                     navigate("/dashboard/guides/safety-guide"),
             },
+            {
+                title: "Development Updates",
+                onClick: (navigate) =>
+                    navigate("/dashboard/dev"),
+            },
+
 
         ],
     },
@@ -179,24 +155,12 @@ export const dashboardNav: NavItem[] = [
                     navigate("/dashboard/profile"),
             },
 
-            {
-                title: "Club Settings",
-                onClick: (navigate) =>
-                    navigate("/dashboard/settings/club"),
-            },
+            // {
+            //     title: "Club Settings",
+            //     onClick: (navigate) =>
+            //         navigate("/dashboard/settings/club"),
+            // },
 
         ],
     },
-
-
-    {
-        title: "Development Updates",
-        icon: <Construction className="text-accent" />,
-
-        titleColor: "accent",
-
-        onClick: (navigate) =>
-            navigate("/dashboard/dev"),
-    },
-
 ];

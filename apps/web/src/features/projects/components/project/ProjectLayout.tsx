@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
     Breadcrumb,
@@ -41,9 +41,19 @@ export function ProjectLayout({
 
     const navigate = useNavigate();
 
-    const [tab, setTab] = useState(
-        defaultTab ?? tabs[0]?.value ?? "overview"
-    );
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const tab = searchParams.get("tab") ?? "overview";
+
+    function handleTabChange(value: string) {
+        setSearchParams(
+            (prev) => {
+                prev.set("tab", value);
+                return prev;
+            },
+            { replace: true }
+        );
+    }
 
     return (
         <div className="flex flex-1 flex-col gap-8">
@@ -69,7 +79,7 @@ export function ProjectLayout({
             <ProjectHero />
             <Tabs
                 value={tab}
-                onValueChange={setTab}
+                onValueChange={handleTabChange}
                 className="space-y-6"
             >
 
