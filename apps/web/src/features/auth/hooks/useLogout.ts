@@ -17,7 +17,7 @@ export function useLogout() {
     },
 
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
+      await queryClient.refetchQueries({
         queryKey: ["auth", "me"],
       });
       revalidator.revalidate();
