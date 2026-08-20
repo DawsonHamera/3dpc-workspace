@@ -248,7 +248,7 @@ export default function SplashPage() {
                             variant="ghost"
                             onClick={() =>
                                 navigate(
-                                    "/projects/3dpc-print-shop"
+                                    "/dashboard/projects/3dpc-print-shop"
                                 )
                             }
                         >

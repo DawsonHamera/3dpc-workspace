@@ -35,7 +35,7 @@ export default function GuestSplashPage() {
             description:
                 "Browse guides, documentation, and resources created to help members get started.",
             icon: BookOpen,
-            action: () => navigate("/dashboard/resources"),
+            action: () => navigate("/dashboard/guides/safety-guide"),
         },
         {
             title: "Events",
