@@ -17,3 +17,4 @@ export * from "./schema/resources/resource_onshape";
 export * from "./schema/resources/resource_files";
 
 export * from "./schema/audit_logs";
+export * from "./schema/auth/magic_login_tokens";

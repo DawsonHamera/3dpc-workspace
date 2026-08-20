@@ -35,6 +35,7 @@ import ManageUsersPage from "./pages/dashboard/ManageUsersPage";
 import MembershipPage from "./pages/dashboard/MembershipPages";
 import OnshapeTestPage from "./pages/dashboard/OnshapeTestPage";
 import PrintersPage from "./pages/dashboard/PrintersPage";
+import MagicLinkPage from "./pages/auth/MagicLinkPage";
 
 export const router = createBrowserRouter([
     {
@@ -93,7 +94,7 @@ export const router = createBrowserRouter([
                             {
                                 path: "membership",
                                 element: <MembershipPage />,
-                            }, 
+                            },
                             {
                                 path: "profile",
                                 element: <ProfilePage />,
@@ -179,6 +180,10 @@ export const router = createBrowserRouter([
                     {
                         path: "/login",
                         element: <LoginPage />,
+                    },
+                    {
+                        path: "/login/magic",
+                        element: <MagicLinkPage />,
                     },
                     {
                         path: "/register",

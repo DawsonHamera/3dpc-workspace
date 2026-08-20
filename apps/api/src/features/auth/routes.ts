@@ -9,6 +9,7 @@ import { AppError } from "../../lib/errors";
 import { AuditActions, auditLogger } from "../../services/auditLog";
 import { requireRole } from "../../middleware/role";
 import { findUserById } from "../users/repository";
+import { sendMagicLoginLink, verifyMagicLogin } from "./magicLink";
 
 const authRoutes = new Hono<Env>()
 
@@ -124,7 +125,7 @@ const authRoutes = new Hono<Env>()
             ].join("; ")
         );
 
-         await audit.create({
+        await audit.create({
             userId,
             action: AuditActions.LOGOUT,
             resourceType: "user",
@@ -182,7 +183,84 @@ const authRoutes = new Hono<Env>()
         return c.json({
             success: true,
         });
-    });
+    })
+
+    .post("/magic-link", async (c) => {
+        const db = c.get("db");
+
+        const { email } =
+            await c.req.json();
+
+        if (
+            typeof email !== "string" ||
+            !email.includes("@")
+        ) {
+            throw new AppError(
+                400,
+                "INVALID_EMAIL",
+                "Invalid email address.",
+            );
+        }
+
+        await sendMagicLoginLink({
+            db,
+            env: c.env,
+            email: email.toLowerCase().trim(),
+            frontendUrl: c.env.FRONTEND_URL,
+        });
+
+        return c.json({
+            success: true,
+        });
+    })
+
+    .post("/magic-link/verify", async (c) => {
+        const db = c.get("db");
+
+        const { token } =
+            await c.req.json();
+
+        if (
+            typeof token !== "string" ||
+            !token
+        ) {
+            throw new AppError(
+                400,
+                "INVALID_TOKEN",
+                "Invalid login token.",
+            );
+        }
+
+        const session =
+            await verifyMagicLogin({
+                db,
+                token,
+            });
+
+        if (!session) {
+            throw new AppError(
+                401,
+                "INVALID_MAGIC_LINK",
+                "This login link is invalid or has expired.",
+            );
+        }
+
+        c.header(
+            "Set-Cookie",
+            [
+                `session=${session}`,
+                "HttpOnly",
+                "Secure",
+                "SameSite=None",
+                "Path=/",
+                "Max-Age=2592000",
+            ].join("; "),
+        );
+
+        return c.json({
+            success: true,
+        });
+    })
 
 
 export default authRoutes;

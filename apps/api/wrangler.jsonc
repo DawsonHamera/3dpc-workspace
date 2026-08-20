@@ -39,7 +39,7 @@
         "ONSHAPE_CLIENT_ID": "HDSXKHGCM2QW6GVZXXG5EPLIQLDKYBLBMCZ4CWI=",
         "ONSHAPE_REDIRECT_URI": "https://3dpc-workspace-api.dawsonhamera-4c2.workers.dev/onshape/callback",
         "FRONTEND_URL": "https://3dpc-workspace.pages.dev",
-        "BCRYPT_ROUNDS": 12
+        "BCRYPT_ROUNDS": 12	
     }
 	/**
 	 * Smart Placement

@@ -14,6 +14,8 @@ import { ZodError } from "zod/v3";
 import { auditRoutes } from "./features/audit/route";
 import { serviceContext } from "./middleware/services";
 import { onshapeRoutes } from "./features/onshape/routes";
+import googleOAuthRoutes from "./features/google/routes";
+import testEmailRoutes from "./features/google/test";
 
 const app = new Hono<Env>()
     .use(
@@ -34,6 +36,8 @@ const app = new Hono<Env>()
     .route("/projects", projectRoutes)
     .route("/audit", auditRoutes)
     .route("/onshape", onshapeRoutes)
+    // .route("/auth/google", googleOAuthRoutes)
+    // .route("/test/email", testEmailRoutes)
     .get("/health", (c) => {
         return c.json({
             status: "ok"
