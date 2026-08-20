@@ -189,7 +189,7 @@ export default function SplashPage() {
                                     variant="outline"
                                     onClick={() =>
                                         navigate(
-                                            "/projects/recreator-filament-recycling"
+                                            "/projects/3dpc-print-shop"
                                         )
                                     }
                                 >
@@ -248,7 +248,7 @@ export default function SplashPage() {
                             variant="ghost"
                             onClick={() =>
                                 navigate(
-                                    "/projects/REPLACE_WITH_PROJECT_ID"
+                                    "/projects/3dpc-print-shop"
                                 )
                             }
                         >
