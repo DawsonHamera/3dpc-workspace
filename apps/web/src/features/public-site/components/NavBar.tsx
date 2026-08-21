@@ -67,7 +67,6 @@ export const NavBar = () => {
                     {user ?
                         <Button variant="secondary" onClick={async () => await logout.mutateAsync()}>
                             Logout
-
                         </Button>
                         :
                         <Button variant="secondary">

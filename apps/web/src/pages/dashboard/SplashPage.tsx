@@ -62,36 +62,7 @@ export default function SplashPage() {
                     </CardHeader>
 
                     <CardContent className="grid gap-3 md:grid-cols-2">
-
-                        {/* Password */}
-                        <div className="flex items-center gap-4 rounded-lg border p-4">
-                            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                                <KeyRound className="size-5 text-primary" />
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                                <p className="font-medium">
-                                    Set your password
-                                </p>
-
-                                <p className="text-sm text-muted-foreground">
-                                    Replace your temporary password with
-                                    one of your own.
-                                </p>
-                            </div>
-
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                    navigate("/dashboard/account?highlight=password-reset")
-                                }
-                            >
-                                Open
-                                <ArrowRight className="ml-2 size-4" />
-                            </Button>
-                        </div>
-
+                        
                         {/* Profile */}
                         <div className="flex items-center gap-4 rounded-lg border p-4">
                             <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary/10">
